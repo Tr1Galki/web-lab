@@ -1,0 +1,24 @@
+{
+  "name": "java",
+  "version": "0.0.1",
+  "description": "web-lab-programming-with-java",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tr1Galki/web-programming-lab-2.git"
+  },
+  "author": "Alever",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Tr1Galki/web-programming-lab-2/issues"
+  },
+  "homepage": "https://github.com/Tr1Galki/web-programming-lab-2#readme",
+  "dependencies": {
+    "amqplib": "^0.10.3",
+    "firebase": "^9.12.1",
+    "jquery": "^3.6.1"
+  }
+}

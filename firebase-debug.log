@@ -1,0 +1,21 @@
+[debug] [2022-10-19T21:11:08.019Z] ----------------------------------------------------------------------
+[debug] [2022-10-19T21:11:08.021Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\alever\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js init
+[debug] [2022-10-19T21:11:08.021Z] CLI Version:   11.15.0
+[debug] [2022-10-19T21:11:08.021Z] Platform:      win32
+[debug] [2022-10-19T21:11:08.021Z] Node Version:  v16.17.0
+[debug] [2022-10-19T21:11:08.022Z] Time:          Thu Oct 20 2022 00:11:08 GMT+0300 (Москва, стандартное время)
+[debug] [2022-10-19T21:11:08.022Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2022-10-19T21:11:08.028Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2022-10-19T21:11:08.029Z] > authorizing via signed-in user (aleksg2004@gmail.com)
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  D:\ITMO\Lessons\Web\Java
+
