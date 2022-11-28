@@ -15,8 +15,6 @@
 
 <body>
 
-<button id="SKIP">SKIP</button>
-
 <!-- particles.js container -->
 <div id="particles-js"></div>
 

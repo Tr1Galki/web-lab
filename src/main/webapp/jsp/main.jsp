@@ -16,7 +16,9 @@
 <!-- scripts -->
 <script src="../js/libs/particles.js"></script>
 <script src="../js/libs/app_particular.js"></script>
-<script src="../js/script.js" defer></script>
+<script type="module" src="../js/libs/amqplib/callback_api.js"></script>
+
+<script type="module" src="../js/script.js" defer></script>
 
 <header class="header">
     <div class="info--student">

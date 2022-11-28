@@ -42,11 +42,10 @@ public class AreaCheckServlet extends HttpServlet {
     }
 
     private String makeCorrectResponse(boolean isInArea, String x, String y, String r, String startTime, String owner) {
-        int id = idGenerate(Double.parseDouble(x), Double.parseDouble(y), Double.parseDouble(r), (int) Long.parseLong(startTime));
         Date date = new Date(System.currentTimeMillis());
         long time = System.currentTimeMillis() - Long.parseLong(startTime);
 
-        Dot dot = new Dot(id, isInArea, Double.parseDouble(x), Double.parseDouble(y), Double.parseDouble(r),
+        Dot dot = new Dot(isInArea, Double.parseDouble(x), Double.parseDouble(y), Double.parseDouble(r),
                 date, (int) time, owner);
 
         //TODO: добавить обработку DB
@@ -64,13 +63,6 @@ public class AreaCheckServlet extends HttpServlet {
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
         return gson.toJson(map);
-    }
-
-    private Integer idGenerate(double xInt, double yInt, double rInt, int time) {
-        int x = (int) xInt * 10000;
-        int y = (int) yInt * 10000000;
-        int r = (int) rInt * 10000;
-        return time + x + y + r + (x * r) + (y * r) + (x * y + 1) + r * r * r;
     }
 
     private boolean isInArea(String xStr, String yStr, String rStr) {

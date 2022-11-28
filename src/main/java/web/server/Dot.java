@@ -3,7 +3,6 @@ package web.server;
 import java.util.Date;
 
 public class Dot {
-    private int id;
     private Boolean inArea;
     private Double x, y, r;
     private Date date;
@@ -11,17 +10,6 @@ public class Dot {
     private String owner;
 
     public Dot() {
-    }
-
-    public Dot(int id, Boolean isInArea, Double x, Double y, Double r, Date date, Integer time, String owner) {
-        this.id = id;
-        this.inArea = isInArea;
-        this.x = x;
-        this.y = y;
-        this.r = r;
-        this.date = date;
-        this.time = time;
-        this.owner = owner;
     }
 
     public Dot(Boolean isInArea, Double x, Double y, Double r, Date date, Integer time, String owner) {
@@ -32,14 +20,6 @@ public class Dot {
         this.date = date;
         this.time = time;
         this.owner = owner;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public Boolean getInArea() {

@@ -1,13 +1,78 @@
-let userData = sessionStorage.getItem('user_id');
-console.log(userData);
-if (!userData) {
+import amqp from "./libs/amqplib/callback_api";
+
+const userID = sessionStorage.getItem('user_id');
+const userPhone = sessionStorage.getItem('user_phone_number');
+
+if (!userID) {
     window.location.replace("../index.jsp");
 }
-
 
 let formValueX,
     formValueY,
     formValueR;
+
+let listDots = [];
+
+// test();
+
+function test(){
+    var args = process.argv.slice(2);
+
+    if (args.length === 0) {
+        console.log("Usage: rpc_client.js num");
+        process.exit(1);
+    }
+
+    amqp.connect('amqp://localhost', function(error0, connection) {
+        if (error0) {
+            throw error0;
+        }
+        connection.createChannel(function(error1, channel) {
+            if (error1) {
+                throw error1;
+            }
+            channel.assertQueue('', {
+                exclusive: true
+            }, function(error2, q) {
+                if (error2) {
+                    throw error2;
+                }
+                var correlationId = generateUuid();
+                var num = parseInt(args[0]);
+
+                console.log(' [x] Requesting fib(%d)', num);
+
+                channel.consume(q.queue, function(msg) {
+                    if (msg.properties.correlationId === correlationId) {
+                        console.log(' [.] Got %s', msg.content.toString());
+                        setTimeout(function() {
+                            connection.close();
+                            process.exit(0);
+                        }, 500);
+                    }
+                }, {
+                    noAck: true
+                });
+
+                channel.sendToQueue('rpc_queue',
+                    Buffer.from(num.toString()), {
+                        correlationId: correlationId,
+                        replyTo: q.queue
+                    });
+            });
+        });
+    });
+
+    function generateUuid() {
+        return Math.random().toString() +
+            Math.random().toString() +
+            Math.random().toString();
+    }
+}
+
+sendDataToServer({
+    requestType: 'connMake'
+}, function (){})
 
 let inputFormX = document.querySelectorAll("input[name='x_param']");
 
@@ -87,7 +152,15 @@ function submitEvent(e) {
 
     if (newValueX && (newValueY || newValueY === 0) && newValueR) {
         for (let i = 0; i < newValueR.length; i++) {
-            sendDataToServer(newValueX, newValueY, newValueR[i]);
+            let data = {
+                requestType: 'areaReq',
+                x: newValueX,
+                y: newValueY,
+                r: newValueR[i],
+                startTime: new Date().getTime(),
+                ownerID: userPhone
+            }
+            sendDataToServer(data, requestToTable);
         }
     }
 }
@@ -172,50 +245,47 @@ function getR(currR) {
     }
 }
 
-function sendDataToServer(valX, valY, valR) {
+function dotsSetter(response) {
+    window.listDots = JSON.parse(response);
+    console.log(window.listDots);
+}
+
+function sendDataToServer(data, requestHandler) {
     let servletUrl = '/server-1.0-SNAPSHOT/ControllerServlet';
-    let data = {
-        requestType: 'areaReq',
-        x: valX,
-        y: valY,
-        r: valR,
-        startTime: new Date().getTime(),
-        ownerID: userData
-    }
     $.ajax({
         type: 'POST',
         url: servletUrl,
         data: data,
-        success: (response) => requestToTable(response)
+        success: (response) => requestHandler(response)
     });
 }
 
-// function sendDataToServer(valX, valY, valR) {
-//     let amqp = require('amqplib/callback_api')
-//     amqp.connect('amqp://localhost', function (error0, connection) {
-//         if (error0) {
-//             throw error0;
-//         }
-//         connection.createChannel(function (error1, channel) {
-//             if (error1) {
-//                 throw error1;
-//             }
-//             let queue = "hello";
-//             let msg = "Hello, world!";
-//
-//             channel.assertQueue(queue, {
-//                 durable: false
-//             });
-//
-//             channel.sendToQueue(queue, Buffer.from(msg));
-//             console.log(" [x] Sent %s", msg);
-//         });
-//         setTimeout (() => {
-//             connection.close();
-//             process.exit(0);
-//         }, 500);
-//     });
-// }
+function send(valX, valY, valR) {
+    let amqp = require('amqplib/callback_api')
+    amqp.connect('amqp://localhost', function (error0, connection) {
+        if (error0) {
+            throw error0;
+        }
+        connection.createChannel(function (error1, channel) {
+            if (error1) {
+                throw error1;
+            }
+            let queue = "hello";
+            let msg = "Hello, world!";
+
+            channel.assertQueue(queue, {
+                durable: false
+            });
+
+            channel.sendToQueue(queue, Buffer.from(msg));
+            console.log(" [x] Sent %s", msg);
+        });
+        setTimeout (() => {
+            connection.close();
+            process.exit(0);
+        }, 500);
+    });
+}
 
 function requestToTable(response) {
     console.log(response);
@@ -272,7 +342,15 @@ function canvasEvent(x, y) {
         for (let i = 0; i < r.length; i++) {
             x = Math.round(x * r[i] * 100) / 100;
             y = Math.round(y * r[i] * 100) / 100;
-            sendDataToServer(x, y, r[i]);
+            let data = {
+                requestType: 'areaReq',
+                x: x,
+                y: y,
+                r: r[i],
+                startTime: new Date().getTime(),
+                ownerID: userPhone
+            }
+            sendDataToServer(data, requestToTable);
         }
     }
 }
@@ -295,8 +373,12 @@ function canvasDraw(canvas) {
     function getCursorPosition(canvas, event) {
         const rect = canvas.getBoundingClientRect()
         const x = (event.clientX - rect.left) / (RADIUS / 2) - WIDTH / RADIUS;
-        const y = -(event.clientY - rect.top) / (RADIUS / 2) + WIDTH / RADIUS;
+        const y = -(event.clientY - rect.top) / (RADIUS / 2) + HEIGHT / RADIUS;
         canvasEvent(x, y);
+        console.log(rect);
+        console.log(event.clientX);
+        console.log(rect.left);
+        console.log((event.clientX - rect.left))
     }
 
     canvas.addEventListener('mousedown', function (e) {

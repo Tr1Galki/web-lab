@@ -43,21 +43,25 @@ function handlingPhoneNumber() {
 
     let appVerifier = window.recaptchaVerifier;
 
-    signInWithPhoneNumber(auth, phoneNumber, appVerifier).then((confirmationResult) => {
-        window.confirmationResult = confirmationResult;
-    }).catch((error) => {
-        userError("incorrect");
+    signInWithPhoneNumber(auth, phoneNumber, appVerifier)
+        .then((confirmationResult) => {
+            window.confirmationResult = confirmationResult;
+    })
+        .catch((error) => {
+            userError("incorrect");
     });
 }
 
 function handlingSMSNumber() {
     let code = document.querySelector("#sms_code_form").value;
-    confirmationResult.confirm(code).then((result) => {
-        const user = result.user;
-        sessionStorage.setItem('user_id', user.uid);
-        window.location.replace("./jsp/main.jsp");
+    confirmationResult.confirm(code)
+        .then((result) => {
+            const user = result.user;
+            sessionStorage.setItem('user_id', user.uid);
+            sessionStorage.setItem('user_phone_number', user.phoneNumber);
+            window.location.replace('./jsp/main.jsp');
     }).catch((error) => {
-        userError("invalid_sms_code");
+        userError('invalid_sms_code');
     });
 }
 
@@ -68,8 +72,3 @@ function userError(id) {
         elem.style.display = "none";
     }, 5000)
 }
-
-let x = document.querySelector("#SKIP");
-x.addEventListener("click", function () {
-    window.location.replace("./jsp/main.jsp");
-})

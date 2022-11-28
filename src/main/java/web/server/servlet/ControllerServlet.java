@@ -17,8 +17,16 @@ public class ControllerServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String requestType = request.getParameter("requestType");
+
         if (requestType.equals("areaReq")) {
             String path = "/AreaCheckServlet";
+            ServletContext servletContext = getServletContext();
+            RequestDispatcher requestDispatcher = servletContext.getRequestDispatcher(path);
+            requestDispatcher.forward(request, response);
+        }
+
+        if (requestType.equals("connMake")) {
+            String path = "/RabbitMakerServlet";
             ServletContext servletContext = getServletContext();
             RequestDispatcher requestDispatcher = servletContext.getRequestDispatcher(path);
             requestDispatcher.forward(request, response);
