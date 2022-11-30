@@ -17,12 +17,6 @@ public class DBHandler {
     }
 
     public void addUserIfNotExist(String ownerID, String number) {
-        String params = String.format(Locale.US, " (%s, %s) ", ownerID, number);
-
-        String INSERT_USER_SQL =
-                "SELECT 1 FROM users " +
-                        "WHERE id = " + ownerID;
-
         DBConnector.addUser(ownerID, number);
     }
 

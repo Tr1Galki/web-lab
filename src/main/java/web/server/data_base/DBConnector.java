@@ -68,10 +68,33 @@ public class DBConnector {
         return list;
     }
 
-    public static void addUser(String ownerID, String number) {
-        String INSERT_USER_SQL =
+    public static Boolean isUserExist(String number) {
+        String SELECT_USER_SQL =
                 "SELECT 1 FROM users " +
-                        "WHERE id = " + ownerID;
+                        "WHERE phone_number = " + number;
+
+        try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD);
+        PreparedStatement preparedStatement = connection.prepareStatement(SELECT_USER_SQL)) {
+
+            ResultSet rs = preparedStatement.executeQuery();
+
+            return !rs.next();
+
+        } catch (SQLException e) {
+            printSQLException(e);
+        }
+        return false;
+    }
+
+    public static void addUser(String ownerID, String number) {
+        String values = String.format(Locale.US, " ('%s', '%s') ", ownerID, number);
+        String INSERT_DOTS_SQL =
+                "INSERT INTO users (id, phone_number) " +
+                        "VALUES " + values;
+
+        if (!isUserExist(number)) {
+            SQLExecutor(INSERT_DOTS_SQL);
+        }
     }
 
     private static void printSQLException(SQLException ex) {
