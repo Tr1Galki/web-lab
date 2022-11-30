@@ -33,9 +33,7 @@ public class AreaCheckServlet extends HttpServlet {
             jsonResponse = makeIncorrectResponse();
         }
 
-        System.out.println(jsonResponse);
-
-        response.setContentType("text/plыain;charset=UTF-8");
+        response.setContentType("text/plain;charset=UTF-8");
         PrintWriter out = response.getWriter();
         out.print(jsonResponse);
         out.flush();

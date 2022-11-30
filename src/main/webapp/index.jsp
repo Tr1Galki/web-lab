@@ -8,8 +8,6 @@
     <link rel="stylesheet" href="CSS/form.css">
     <link rel="stylesheet" href="CSS/auth.css">
 
-    <script type="module" defer src="js/app.js"></script>
-    <script defer src="js/numpad.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 </head>
 
@@ -21,6 +19,8 @@
 <!-- scripts -->
 <script src="js/libs/particles.js"></script>
 <script src="js/libs/app_particular.js"></script>
+<script type="module" defer src="js/registration/app.js"></script>
+<script defer src="js/registration/numpad.js"></script>
 
 <div class="main--container">
     <div class="phone--container">

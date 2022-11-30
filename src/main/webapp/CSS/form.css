@@ -10,6 +10,10 @@ legend {
 }
 
 button {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+
     font-family: inherit;
     font-size: 150%;
     background-color: rgba(40, 40, 40, 0.5);
@@ -43,7 +47,7 @@ input:focus {
     color: #282828;
     border-color: white;
     transition: .25s all ease;
-    outline:none;
+    outline: none;
 }
 
 .group--text {
@@ -98,6 +102,10 @@ input[type="checkbox"]:checked + label:before, input[type="radio"]:checked + lab
 
 /* Transition */
 label, label::before {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+
     transition: .25s all ease;
 }
 

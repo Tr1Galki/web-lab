@@ -97,3 +97,8 @@ td:hover, th:hover {
     position: fixed;
     z-index: -1;
 }
+
+::selection {
+    background: white; /* Safari */
+    color: #1E1E20;
+}

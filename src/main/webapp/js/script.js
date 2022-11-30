@@ -1,5 +1,3 @@
-import amqp from "./libs/amqplib/callback_api";
-
 const userID = sessionStorage.getItem('user_id');
 const userPhone = sessionStorage.getItem('user_phone_number');
 
@@ -11,68 +9,99 @@ let formValueX,
     formValueY,
     formValueR;
 
-let listDots = [];
+const listOfDots = [];
 
-// test();
+// function init() {
+//     let data = {
+//         requestType: 'init'
+//     }
+//     sendDataToServlet(data, ()=>{});
+//     rabbitMQReceive();
+//     //TODO: создать запрос отправляющий для инициализации QueueHandler и добавить там же в бд пользователя
+// }
 
-function test(){
-    var args = process.argv.slice(2);
 
-    if (args.length === 0) {
-        console.log("Usage: rpc_client.js num");
-        process.exit(1);
+// sendDataToServer({
+//     requestType: 'connMake',
+//     ownerNumber: userPhone
+// }, listDotsHandler)
+
+let socket = new WebSocket("ws://localhost:8080/server-1.0-SNAPSHOT/web-socket");
+
+window.onbeforeunload = () => {
+    socket.close();
+}
+
+socket.onopen = () => {
+    console.log("Соединение успешно перешло на протокол WebSocket");
+    socketHandler();
+    let testData = {
+        type: "test"
     }
+    socketSend(JSON.stringify(testData));
+    let getDots = {
+        type: "getAllDots",
+        ownerPhoneNumber: userPhone
+    }
+    socketSend(JSON.stringify(getDots));
+    socketSend(JSON.stringify(getDots));
+    socketSend(JSON.stringify(getDots));
+    socketSend(JSON.stringify(getDots));
+}
 
-    amqp.connect('amqp://localhost', function(error0, connection) {
-        if (error0) {
-            throw error0;
-        }
-        connection.createChannel(function(error1, channel) {
-            if (error1) {
-                throw error1;
-            }
-            channel.assertQueue('', {
-                exclusive: true
-            }, function(error2, q) {
-                if (error2) {
-                    throw error2;
-                }
-                var correlationId = generateUuid();
-                var num = parseInt(args[0]);
+socket.onerror = (e) => {
+    alert("WebSocket my error");
+}
 
-                console.log(' [x] Requesting fib(%d)', num);
+socket.onclose = (e) => {
+    alert("WebSocket closed");
+}
 
-                channel.consume(q.queue, function(msg) {
-                    if (msg.properties.correlationId === correlationId) {
-                        console.log(' [.] Got %s', msg.content.toString());
-                        setTimeout(function() {
-                            connection.close();
-                            process.exit(0);
-                        }, 500);
-                    }
-                }, {
-                    noAck: true
-                });
-
-                channel.sendToQueue('rpc_queue',
-                    Buffer.from(num.toString()), {
-                        correlationId: correlationId,
-                        replyTo: q.queue
-                    });
-            });
-        });
-    });
-
-    function generateUuid() {
-        return Math.random().toString() +
-            Math.random().toString() +
-            Math.random().toString();
+function socketSend(data) {
+    if (socket.readyState) {
+        socket.send(data);
+    } else {
+        setTimeout(() => {
+            socketSend(data);
+        }, 200);
     }
 }
 
-sendDataToServer({
-    requestType: 'connMake'
-}, function (){})
+function socketHandler() {
+    socket.onmessage = function (e) {
+        console.log(e.data)
+        try{
+            let jsonResponse = JSON.parse(e.data);
+            switch (jsonResponse.type) {
+                case("allDots"): {
+                    console.log("kek");
+                    break;
+                }
+                default: {
+                    console.log("no one type with: " + jsonResponse.type);
+                }
+            }
+        } catch (exception) {
+            console.log("Error. " + exception)
+        }
+    }
+}
+
+
+function listDotsHandler(response) {
+    console.log(response);
+    let responseList = JSON.parse(response);
+    for (let elem in responseList) {
+        addDot(responseList[elem]);
+    }
+}
+
+function addDot(dot) {
+    listOfDots.push(dot);
+    requestToTable(dot);
+    canvasDrawDots(canvas, dot);
+}
+
 
 let inputFormX = document.querySelectorAll("input[name='x_param']");
 
@@ -160,7 +189,7 @@ function submitEvent(e) {
                 startTime: new Date().getTime(),
                 ownerID: userPhone
             }
-            sendDataToServer(data, requestToTable);
+            sendDataToServlet(data, addJsonDot);
         }
     }
 }
@@ -247,10 +276,9 @@ function getR(currR) {
 
 function dotsSetter(response) {
     window.listDots = JSON.parse(response);
-    console.log(window.listDots);
 }
 
-function sendDataToServer(data, requestHandler) {
+function sendDataToServlet(data, requestHandler) {
     let servletUrl = '/server-1.0-SNAPSHOT/ControllerServlet';
     $.ajax({
         type: 'POST',
@@ -260,35 +288,11 @@ function sendDataToServer(data, requestHandler) {
     });
 }
 
-function send(valX, valY, valR) {
-    let amqp = require('amqplib/callback_api')
-    amqp.connect('amqp://localhost', function (error0, connection) {
-        if (error0) {
-            throw error0;
-        }
-        connection.createChannel(function (error1, channel) {
-            if (error1) {
-                throw error1;
-            }
-            let queue = "hello";
-            let msg = "Hello, world!";
-
-            channel.assertQueue(queue, {
-                durable: false
-            });
-
-            channel.sendToQueue(queue, Buffer.from(msg));
-            console.log(" [x] Sent %s", msg);
-        });
-        setTimeout (() => {
-            connection.close();
-            process.exit(0);
-        }, 500);
-    });
+function addJsonDot(json) {
+    addDot(JSON.parse(json));
 }
 
 function requestToTable(response) {
-    console.log(response);
     // if (JSON.parse(response).isCorrect && response) {
     if (response) {
         if (!document.querySelector(".table--main")) {
@@ -311,17 +315,17 @@ function requestToTable(response) {
         }
         let table = document.querySelector(".table--main")
         let new_row = table.insertRow(1);
-        if (JSON.parse(response).inArea) {
+        if (response.inArea) {
             new_row.insertCell(0).appendChild(document.createTextNode('yes'));
         } else {
             new_row.insertCell(0).appendChild(document.createTextNode('no'))
         }
-        new_row.insertCell(1).appendChild(document.createTextNode(JSON.parse(response).x));
-        new_row.insertCell(2).appendChild(document.createTextNode(JSON.parse(response).y));
-        new_row.insertCell(3).appendChild(document.createTextNode(JSON.parse(response).r));
-        new_row.insertCell(4).appendChild(document.createTextNode(JSON.parse(response).date));
-        new_row.insertCell(5).appendChild(document.createTextNode((JSON.parse(response).time)));
-        new_row.insertCell(6).appendChild(document.createTextNode((JSON.parse(response).owner)));
+        new_row.insertCell(1).appendChild(document.createTextNode(response.x));
+        new_row.insertCell(2).appendChild(document.createTextNode(response.y));
+        new_row.insertCell(3).appendChild(document.createTextNode(response.r));
+        new_row.insertCell(4).appendChild(document.createTextNode(response.date));
+        new_row.insertCell(5).appendChild(document.createTextNode(response.time));
+        new_row.insertCell(6).appendChild(document.createTextNode(response.owner));
     } else {
         console.error("input Data is incorrect")
     }
@@ -334,6 +338,7 @@ function userError(id) {
         elem.style.display = "none";
     }, 5000)
 }
+
 
 function canvasEvent(x, y) {
     let r = getR(formValueR);
@@ -350,7 +355,7 @@ function canvasEvent(x, y) {
                 startTime: new Date().getTime(),
                 ownerID: userPhone
             }
-            sendDataToServer(data, requestToTable);
+            sendDataToServlet(data, addJsonDot);
         }
     }
 }
@@ -375,10 +380,6 @@ function canvasDraw(canvas) {
         const x = (event.clientX - rect.left) / (RADIUS / 2) - WIDTH / RADIUS;
         const y = -(event.clientY - rect.top) / (RADIUS / 2) + HEIGHT / RADIUS;
         canvasEvent(x, y);
-        console.log(rect);
-        console.log(event.clientX);
-        console.log(rect.left);
-        console.log((event.clientX - rect.left))
     }
 
     canvas.addEventListener('mousedown', function (e) {
@@ -444,6 +445,19 @@ function canvasDraw(canvas) {
     ctx.stroke();
     ctx.closePath();
 
+}
+
+function canvasDrawDots(canvas, dot) {
+    const ctx = canvas.getContext("2d");
+
+    let x = (dot.x / dot.r + WIDTH / RADIUS) * RADIUS;
+    let y = -(dot.y / dot.r - WIDTH / RADIUS) * RADIUS;
+
+    ctx.beginPath();
+    ctx.strokeStyle = COLOR;
+    ctx.arc(x, y, 8, 0, 2 * Math.PI)
+    ctx.closePath();
+    ctx.stroke();
 }
 
 const canvas = document.querySelector("#graph")

@@ -7,7 +7,7 @@ import jakarta.servlet.annotation.*;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-@WebServlet(name = "ControllerServlet", value = "/ControllerServlet")
+@WebServlet(name = "ControllerServlet", value = "/ControllerServlet", asyncSupported = true)
 public class ControllerServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) {
@@ -18,23 +18,37 @@ public class ControllerServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String requestType = request.getParameter("requestType");
 
-        if (requestType.equals("areaReq")) {
-            String path = "/AreaCheckServlet";
-            ServletContext servletContext = getServletContext();
-            RequestDispatcher requestDispatcher = servletContext.getRequestDispatcher(path);
-            requestDispatcher.forward(request, response);
-        }
-
-        if (requestType.equals("connMake")) {
-            String path = "/RabbitMakerServlet";
-            ServletContext servletContext = getServletContext();
-            RequestDispatcher requestDispatcher = servletContext.getRequestDispatcher(path);
-            requestDispatcher.forward(request, response);
+        switch (requestType) {
+            case ("areaReq"): {
+                areaRequest(request, response);
+                break;
+            }
+            case ("init"): {
+                rabbitInit(request, response);
+                break;
+            }
+            default: {
+                break;
+            }
         }
 
         response.setContentType("text/html");
         PrintWriter out = response.getWriter();
-//        out.print("text");
-//        out.flush();
+        out.print("text");
+        out.flush();
+    }
+
+    private void areaRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String path = "/AreaCheckServlet";
+        ServletContext servletContext = getServletContext();
+        RequestDispatcher requestDispatcher = servletContext.getRequestDispatcher(path);
+        requestDispatcher.forward(request, response);
+    }
+
+    private void rabbitInit(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+//        String path = "/RabbitHandlerServlet";
+//        ServletContext servletContext = getServletContext();
+//        RequestDispatcher requestDispatcher = servletContext.getRequestDispatcher(path);
+//        requestDispatcher.forward(request, response);
     }
 }

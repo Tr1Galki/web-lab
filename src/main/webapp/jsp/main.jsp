@@ -16,9 +16,7 @@
 <!-- scripts -->
 <script src="../js/libs/particles.js"></script>
 <script src="../js/libs/app_particular.js"></script>
-<script type="module" src="../js/libs/amqplib/callback_api.js"></script>
 
-<script type="module" src="../js/script.js" defer></script>
 
 <header class="header">
     <div class="info--student">
@@ -29,8 +27,7 @@
             Web-programming
         </div>
         <div class="info--work__lab">
-            Lab N1 Variant N1206
-            <% %>
+            Lab N2 Variant N1206
         </div>
     </div>
 </header>
@@ -105,7 +102,7 @@
                     Please select R
                 </div>
                 <div class="button--sender">
-                    <button type="submit" id="submit_button">Submit</button>
+                    <button type="submit" id="submit_button" >Submit</button>
                 </div>
             </fieldset>
         </form>
@@ -135,6 +132,8 @@
         </tbody>
     </table>
 </div>
+
+<script src="./../js/script.js" defer></script>
 
 </body>
 
