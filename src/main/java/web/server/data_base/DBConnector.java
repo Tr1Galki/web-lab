@@ -6,7 +6,6 @@ import java.sql.*;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -71,7 +70,7 @@ public class DBConnector {
     public static Boolean isUserExist(String number) {
         String SELECT_USER_SQL =
                 "SELECT 1 FROM users " +
-                        "WHERE phone_number = " + number;
+                        "WHERE 'phone_number' = '" + number + "'";
 
         try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD);
         PreparedStatement preparedStatement = connection.prepareStatement(SELECT_USER_SQL)) {

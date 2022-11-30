@@ -6,56 +6,74 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 import jakarta.websocket.*;
 import jakarta.websocket.server.ServerEndpoint;
+import org.json.JSONObject;
 import web.server.QueueHandler;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.TimeoutException;
+import java.util.Map;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 @ServerEndpoint("/web-socket")
 public class RabbitWebSocket {
+
     private Session session;
-    private static final Queue<Session> queue = new ConcurrentLinkedQueue<>();
+    private static final ConcurrentHashMap<Session, String> map = new ConcurrentHashMap<Session, String>();
 
     @OnOpen
-    public void onOpen(Session session) {
-        System.out.println("---------------------------------------------------------");
-        queue.add(session);
-        System.out.println("queue: " + queue);
-        System.out.println(queue.peek());
+    public void onOpen(Session session) {;
+        System.out.println(session);
+        map.put(session, "");
         init();
     }
 
     @OnMessage
-    public void onMessage(String message) throws IOException {
-        System.out.println(message);
+    public void onMessage(String message, Session session) throws IOException {
+        String ownerPhoneNumber = getOwnerPhone(message);
+
+        System.out.println("------");
+        System.out.println(map);
+        map.put(session, ownerPhoneNumber);
+        System.out.println(map);
         rabbitSend(message);
     }
 
     @OnClose
     public void onClose(Session session) {
-        queue.remove(session);
+        map.remove(session);
         System.out.println("On close triggered with session: " + session);
     }
 
-//    @OnError
-//    public void onError(Session session, Throwable thr) {
-//        queue.remove(session);
-//        System.out.println("On close triggered");
-//        System.out.println(thr.toString());
-//    }
+    @OnError
+    public void onError(Session session, Throwable thr) {
+        map.remove(session);
+        System.out.println("On close triggered");
+        System.out.println(thr.toString());
+    }
 
     private void doMessage(String message) {
-        System.out.println("queue: " + queue);
-        System.out.println("send to JS: " + message);
-        System.out.println(queue.peek());
-        try {
-            queue.peek().getBasicRemote().sendText(message);
-        } catch (IOException e) {
-            e.printStackTrace();
+        String ownerPhoneNumber = getOwnerPhone(message);
+
+        Session currentSession = null;
+
+        for (Map.Entry<Session, String> entry : map.entrySet()) {
+            Session key = entry.getKey();
+            String value = entry.getValue();
+            if (value.equals(ownerPhoneNumber)) {
+                try {
+                    System.out.println("[sending]");
+                    System.out.println(map);
+                    System.out.println(value);
+                    key.getAsyncRemote().sendText(message);
+                    return;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
+
+
         //        queue.peek().getAsyncRemote().sendText("your session: " + queue.peek().toString() + " message: " + message);
     }
 
@@ -65,7 +83,6 @@ public class RabbitWebSocket {
 
     private void init() {
         QueueHandler.run();
-        System.out.println("queue: " + queue);
         rabbitReceive();
     }
 
@@ -97,7 +114,6 @@ public class RabbitWebSocket {
             DeliverCallback deliverCallback = (consumerTag, delivery) -> {
                 String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
                 System.out.println(" [x] User received '" + message + "'");
-                System.out.println("queue: " + queue);
                 handling(message);
             };
             channel.basicConsume(QUEUE_NAME, true, deliverCallback, consumerTag -> {
@@ -105,5 +121,10 @@ public class RabbitWebSocket {
         } catch (IOException | TimeoutException e) {
             e.printStackTrace();
         }
+    }
+
+    private String getOwnerPhone(String message) {
+        JSONObject json = new JSONObject(message);
+        return json.get("ownerPhoneNumber").toString();
     }
 }

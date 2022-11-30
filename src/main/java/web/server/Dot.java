@@ -8,6 +8,7 @@ public class Dot {
     private Date date;
     private Integer time;
     private String owner;
+    private String creator;
 
     public Dot() {
     }

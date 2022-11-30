@@ -68,8 +68,10 @@ public class QueueHandler {
                 dbHandler.addUserIfNotExist(ownerID, ownerPhone);
 
                 List<Dot> list = dbHandler.getDotsByUser(ownerPhone);
-                String jsonResponse = gson.toJson(list);
-                jsonResponse = "{\"type\":\"allDots\", \"array\": " + jsonResponse + "}";
+                String jsonResponse;
+                jsonResponse = "{\"type\":\"allDots\"," +
+                        "\"ownerPhoneNumber\":\"" + ownerPhone + "\","+
+                        " \"array\": " + gson.toJson(list) + "}";
 
                 send(jsonResponse);
                 break;

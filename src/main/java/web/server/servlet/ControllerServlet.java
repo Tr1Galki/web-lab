@@ -23,10 +23,6 @@ public class ControllerServlet extends HttpServlet {
                 areaRequest(request, response);
                 break;
             }
-            case ("init"): {
-                rabbitInit(request, response);
-                break;
-            }
             default: {
                 break;
             }
@@ -43,12 +39,5 @@ public class ControllerServlet extends HttpServlet {
         ServletContext servletContext = getServletContext();
         RequestDispatcher requestDispatcher = servletContext.getRequestDispatcher(path);
         requestDispatcher.forward(request, response);
-    }
-
-    private void rabbitInit(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-//        String path = "/RabbitHandlerServlet";
-//        ServletContext servletContext = getServletContext();
-//        RequestDispatcher requestDispatcher = servletContext.getRequestDispatcher(path);
-//        requestDispatcher.forward(request, response);
     }
 }
