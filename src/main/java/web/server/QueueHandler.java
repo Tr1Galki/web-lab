@@ -56,17 +56,28 @@ public class QueueHandler {
 //        send(jsonResponse);
 
 
-//        Gson gson = new Gson();
-//        JSONObject json = new JSONObject(jsonMessage);
-//        String type = json.get("type").toString();
-//        if (type.equals("getDotsByDB")) {
-//            DBHandler dbHandler = new DBHandler();
-//            List<Dot> list = dbHandler.getDotsByUser(json.get("owner").toString());
-//            String jsonResponse = gson.toJson(list);
-////            jsonResponse = "{'type':'allDots', 'array':'" + jsonResponse + "'}";
-//            send("jsonResponse");
-//        }
-        send("jsonResponse");
+        Gson gson = new Gson();
+        JSONObject json = new JSONObject(jsonMessage);
+        String type = json.get("type").toString();
+        switch (type) {
+            case ("getAllDots"): {
+                String ownerPhone = json.get("ownerPhoneNumber").toString();
+                String ownerID = json.get("ownerID").toString();
+                DBHandler dbHandler = new DBHandler();
+
+                dbHandler.addUserIfNotExist(ownerID, ownerPhone);
+
+                List<Dot> list = dbHandler.getDotsByUser(ownerPhone);
+                String jsonResponse = gson.toJson(list);
+                jsonResponse = "{\"type\":\"allDots\", \"array\": " + jsonResponse + "}";
+
+                send(jsonResponse);
+                break;
+            }
+            default: {
+                break;
+            }
+        }
     }
 
     private static void send(String message) {

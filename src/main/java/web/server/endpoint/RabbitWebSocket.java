@@ -17,13 +17,14 @@ import java.util.concurrent.TimeoutException;
 @ServerEndpoint("/web-socket")
 public class RabbitWebSocket {
     private Session session;
-    private static Queue<Session> queue = new ConcurrentLinkedQueue<>();
+    private static final Queue<Session> queue = new ConcurrentLinkedQueue<>();
 
     @OnOpen
     public void onOpen(Session session) {
         System.out.println("---------------------------------------------------------");
         queue.add(session);
-        System.out.println(this.session);
+        System.out.println("queue: " + queue);
+        System.out.println(queue.peek());
         init();
     }
 
@@ -39,17 +40,23 @@ public class RabbitWebSocket {
         System.out.println("On close triggered with session: " + session);
     }
 
-    @OnError
-    public void onError(Session session, Throwable thr) {
-        queue.remove(session);
-        System.out.println("On close triggered");
-        System.out.println(thr.toString());
-    }
+//    @OnError
+//    public void onError(Session session, Throwable thr) {
+//        queue.remove(session);
+//        System.out.println("On close triggered");
+//        System.out.println(thr.toString());
+//    }
 
     private void doMessage(String message) {
+        System.out.println("queue: " + queue);
         System.out.println("send to JS: " + message);
-        assert queue.peek() != null;
-        queue.peek().getAsyncRemote().sendText("your session: " + queue.peek().toString() + " message: " + message);
+        System.out.println(queue.peek());
+        try {
+            queue.peek().getBasicRemote().sendText(message);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //        queue.peek().getAsyncRemote().sendText("your session: " + queue.peek().toString() + " message: " + message);
     }
 
     private void handling(String message) throws IOException {
@@ -58,6 +65,7 @@ public class RabbitWebSocket {
 
     private void init() {
         QueueHandler.run();
+        System.out.println("queue: " + queue);
         rabbitReceive();
     }
 
@@ -89,6 +97,7 @@ public class RabbitWebSocket {
             DeliverCallback deliverCallback = (consumerTag, delivery) -> {
                 String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
                 System.out.println(" [x] User received '" + message + "'");
+                System.out.println("queue: " + queue);
                 handling(message);
             };
             channel.basicConsume(QUEUE_NAME, true, deliverCallback, consumerTag -> {

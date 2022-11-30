@@ -45,6 +45,7 @@ public class AreaCheckServlet extends HttpServlet {
 
         Dot dot = new Dot(isInArea, Double.parseDouble(x), Double.parseDouble(y), Double.parseDouble(r),
                 date, (int) time, owner);
+        //добавить обработку DB
 
         //TODO: добавить обработку DB
         DBHandler dbHandler = new DBHandler();

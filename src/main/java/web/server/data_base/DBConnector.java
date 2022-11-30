@@ -18,7 +18,11 @@ public class DBConnector {
     private static final String PASSWORD = "QAZwsx5709as";
 
     public static void SQLExecutor(String SQL_STATEMENT) {
-
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
         try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD);
              PreparedStatement preparedStatement = connection.prepareStatement(SQL_STATEMENT)) {
 
@@ -29,7 +33,14 @@ public class DBConnector {
     }
 
     public static List<Dot> SQLSelector(String SQL_STATEMENT) {
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
         List<Dot> list = new LinkedList<>();
+
         try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD);
              PreparedStatement preparedStatement = connection.prepareStatement(SQL_STATEMENT)) {
 
@@ -57,7 +68,13 @@ public class DBConnector {
         return list;
     }
 
-    public static void printSQLException(SQLException ex) {
+    public static void addUser(String ownerID, String number) {
+        String INSERT_USER_SQL =
+                "SELECT 1 FROM users " +
+                        "WHERE id = " + ownerID;
+    }
+
+    private static void printSQLException(SQLException ex) {
         for (Throwable e : ex) {
             if (e instanceof SQLException) {
                 e.printStackTrace(System.err);

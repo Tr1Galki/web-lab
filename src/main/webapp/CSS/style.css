@@ -29,7 +29,7 @@ body {
 .main__container {
     display: inline-block;
     vertical-align: top;
-    padding-left: 35px;
+    padding-left: 50px;
 }
 
 .canvas-container {
@@ -50,8 +50,8 @@ body {
     width: 90%;
     font-size: 120%;
     padding-top: 0;
-    padding-left: 30px;
-    padding-right: 35px;
+    padding-left: 75px;
+    padding-right: 75px;
 }
 
 .form__group {
@@ -66,14 +66,15 @@ body {
 .table--main {
     margin: 0 auto;
     table-layout: fixed;
-    width: 80%;
+    width: 90%;
     border-collapse: collapse;
     border-radius: 10px;
 }
 
 td, th {
     border: 1px solid rgb(70, 70, 70);
-    padding: 20px;
+    padding-top: 20px;
+    padding-bottom: 20px;
     text-align: center;
     transition: .15s all ease;
 }
@@ -85,6 +86,9 @@ td:hover, th:hover {
     transition: .15s all ease;
 }
 
+th.choose_col {
+    width: auto;
+}
 
 /* ---- particles.js container ---- */
 

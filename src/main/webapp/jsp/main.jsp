@@ -32,6 +32,8 @@
     </div>
 </header>
 
+<button id="print_dots">NEED FUNC</button>
+
 <div class="main">
     <div class="form__container">
         <form class="main__form">
@@ -128,6 +130,7 @@
             <th scope="col">Date</th>
             <th scope="col">Script's time</th>
             <th scope="col">Owner</th>
+            <th scope="col" class="choose_col">Choose</th>
         </tr>
         </tbody>
     </table>

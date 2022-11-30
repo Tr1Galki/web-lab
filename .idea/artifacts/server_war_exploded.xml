@@ -26,7 +26,7 @@
           <element id="library" level="project" name="Maven: ch.qos.logback:logback-core:1.2.3" />
           <element id="library" level="project" name="Maven: com.rabbitmq.jms:rabbitmq-jms:3.0.0.RC1" />
           <element id="library" level="project" name="Maven: jakarta.jms:jakarta.jms-api:3.0.0" />
-          <element id="library" level="project" name="Maven: org.postgresql:postgresql:42.5.0" />
+          <element id="library" level="project" name="Maven: org.postgresql:postgresql:42.5.1" />
           <element id="library" level="project" name="Maven: org.checkerframework:checker-qual:3.5.0" />
           <element id="library" level="project" name="Maven: org.json:json:20180130" />
         </element>

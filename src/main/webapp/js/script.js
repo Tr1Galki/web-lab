@@ -9,17 +9,9 @@ let formValueX,
     formValueY,
     formValueR;
 
+let chosenDots = [];
+
 const listOfDots = [];
-
-// function init() {
-//     let data = {
-//         requestType: 'init'
-//     }
-//     sendDataToServlet(data, ()=>{});
-//     rabbitMQReceive();
-//     //TODO: создать запрос отправляющий для инициализации QueueHandler и добавить там же в бд пользователя
-// }
-
 
 // sendDataToServer({
 //     requestType: 'connMake',
@@ -28,33 +20,15 @@ const listOfDots = [];
 
 let socket = new WebSocket("ws://localhost:8080/server-1.0-SNAPSHOT/web-socket");
 
-window.onbeforeunload = () => {
-    socket.close();
-}
-
 socket.onopen = () => {
     console.log("Соединение успешно перешло на протокол WebSocket");
     socketHandler();
-    let testData = {
-        type: "test"
-    }
-    socketSend(JSON.stringify(testData));
     let getDots = {
         type: "getAllDots",
+        ownerID: userID,
         ownerPhoneNumber: userPhone
     }
     socketSend(JSON.stringify(getDots));
-    socketSend(JSON.stringify(getDots));
-    socketSend(JSON.stringify(getDots));
-    socketSend(JSON.stringify(getDots));
-}
-
-socket.onerror = (e) => {
-    alert("WebSocket my error");
-}
-
-socket.onclose = (e) => {
-    alert("WebSocket closed");
 }
 
 function socketSend(data) {
@@ -68,13 +42,22 @@ function socketSend(data) {
 }
 
 function socketHandler() {
+    socket.onerror = (e) => {
+        console.log("WebSocket my error");
+    }
+    socket.onclose = (e) => {
+        console.log("WebSocket closed");
+    }
+    window.onbeforeunload = () => {
+        // socket.close();
+    }
     socket.onmessage = function (e) {
         console.log(e.data)
         try{
             let jsonResponse = JSON.parse(e.data);
             switch (jsonResponse.type) {
                 case("allDots"): {
-                    console.log("kek");
+                    listDotsHandler(jsonResponse.array);
                     break;
                 }
                 default: {
@@ -87,21 +70,53 @@ function socketHandler() {
     }
 }
 
+let testButton = document.querySelector("#print_dots");
+testButton.addEventListener("click", (e) => {
+    getChosenDots();
+})
+
+function getChosenDots() {
+    let inputDots = document.querySelectorAll("input[name='dot_param']");
+
+    for (let i = 0; i < inputDots.length; i++) {
+        inputDots[i].addEventListener("change", (e) => {
+            let dotNumber = e.target.value;
+            if (!inputDots) {
+                inputDots = [];
+            }
+            if (e.target.checked) {
+                if (!chosenDots.includes(listOfDots[dotNumber])) {
+                    chosenDots.push(listOfDots[dotNumber]);
+                }
+            } else {
+                let index = chosenDots.indexOf(listOfDots[dotNumber]);
+                if (index !== -1) {
+                    chosenDots.splice(index, 1);
+                }
+            }
+            // let elem = document.querySelector("#empty_R");
+            // if (formValueR.length === 0) {
+            //     elem.style.display = "block";
+            // } else {
+            //     elem.style.display = "none";
+            // }
+            console.log(chosenDots);
+        })
+    }
+}
 
 function listDotsHandler(response) {
-    console.log(response);
-    let responseList = JSON.parse(response);
-    for (let elem in responseList) {
-        addDot(responseList[elem]);
+    for (let elem in response) {
+        addDot(response[elem]);
     }
 }
 
 function addDot(dot) {
+    let size = listOfDots.length;
     listOfDots.push(dot);
-    requestToTable(dot);
+    requestToTable(dot, size);
     canvasDrawDots(canvas, dot);
 }
-
 
 let inputFormX = document.querySelectorAll("input[name='x_param']");
 
@@ -292,7 +307,7 @@ function addJsonDot(json) {
     addDot(JSON.parse(json));
 }
 
-function requestToTable(response) {
+function requestToTable(response, size) {
     // if (JSON.parse(response).isCorrect && response) {
     if (response) {
         if (!document.querySelector(".table--main")) {
@@ -312,7 +327,16 @@ function requestToTable(response) {
             new_row.insertCell(3).appendChild(document.createTextNode('R value'));
             new_row.insertCell(4).appendChild(document.createTextNode('Date'));
             new_row.insertCell(5).appendChild(document.createTextNode('Script\'s time'));
+            new_row.insertCell(6).appendChild(document.createTextNode('Owner'));
+            new_row.insertCell(7).appendChild(document.createTextNode('Choose'));
         }
+        let checkBox = document.createElement("div");
+        checkBox.setAttribute("class", "group--buttons");
+        checkBox.setAttribute("style", "text-align: center; margin: 0 auto;\n");
+        checkBox.innerHTML = "<input type=\"checkbox\" id=\"dot" + size + "\" name=\"dot_param\" value=\"" +
+            size + "\" style='text-align: center; margin: 0 auto;'>\n" +
+            "<label for=\"dot" + size +"\">✓</label>";
+
         let table = document.querySelector(".table--main")
         let new_row = table.insertRow(1);
         if (response.inArea) {
@@ -323,9 +347,15 @@ function requestToTable(response) {
         new_row.insertCell(1).appendChild(document.createTextNode(response.x));
         new_row.insertCell(2).appendChild(document.createTextNode(response.y));
         new_row.insertCell(3).appendChild(document.createTextNode(response.r));
-        new_row.insertCell(4).appendChild(document.createTextNode(response.date));
+        let cell4 = new_row.insertCell(4);
+        cell4.setAttribute("style", "padding-left: 20px; padding-right: 20px;");
+        // new_row.insertCell(4).appendChild(document.createTextNode(response.date));
+        cell4.appendChild(document.createTextNode(response.date));
         new_row.insertCell(5).appendChild(document.createTextNode(response.time));
         new_row.insertCell(6).appendChild(document.createTextNode(response.owner));
+        let cell7 = new_row.insertCell(7);
+        cell7.setAttribute("style", "padding-left: 65px; padding-right: 65px;");
+        cell7.appendChild(checkBox);
     } else {
         console.error("input Data is incorrect")
     }
@@ -376,15 +406,17 @@ function canvasDraw(canvas) {
     canvas.height = DPI_HEIGHT;
 
     function getCursorPosition(canvas, event) {
-        const rect = canvas.getBoundingClientRect()
+        const rect = canvas.getBoundingClientRect();
+        console.log(rect);
         const x = (event.clientX - rect.left) / (RADIUS / 2) - WIDTH / RADIUS;
         const y = -(event.clientY - rect.top) / (RADIUS / 2) + HEIGHT / RADIUS;
+        console.log(event);
         canvasEvent(x, y);
     }
 
     canvas.addEventListener('mousedown', function (e) {
         getCursorPosition(canvas, e)
-    })
+    });
 
     // Y axis
     ctx.beginPath();

@@ -49,7 +49,7 @@
     <orderEntry type="library" name="Maven: ch.qos.logback:logback-core:1.2.3" level="project" />
     <orderEntry type="library" name="Maven: com.rabbitmq.jms:rabbitmq-jms:3.0.0.RC1" level="project" />
     <orderEntry type="library" name="Maven: jakarta.jms:jakarta.jms-api:3.0.0" level="project" />
-    <orderEntry type="library" name="Maven: org.postgresql:postgresql:42.5.0" level="project" />
+    <orderEntry type="library" name="Maven: org.postgresql:postgresql:42.5.1" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: org.checkerframework:checker-qual:3.5.0" level="project" />
     <orderEntry type="library" name="Maven: org.json:json:20180130" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: jakarta.websocket:jakarta.websocket-api:2.0.0" level="project" />
