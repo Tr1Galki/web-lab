@@ -42,10 +42,10 @@ function socketSend(data) {
 }
 
 function socketHandler() {
-    socket.onerror = (e) => {
+    socket.onerror = () => {
         console.log("WebSocket my error");
     }
-    socket.onclose = (e) => {
+    socket.onclose = () => {
         console.log("WebSocket closed");
     }
     window.onbeforeunload = () => {
@@ -71,7 +71,7 @@ function socketHandler() {
 }
 
 let testButton = document.querySelector("#print_dots");
-testButton.addEventListener("click", (e) => {
+testButton.addEventListener("click", () => {
     getChosenDots();
 })
 

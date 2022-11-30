@@ -13,23 +13,21 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 @ServerEndpoint("/web-socket")
 public class RabbitWebSocket {
 
-    private Session session;
-    private static final ConcurrentHashMap<Session, String> map = new ConcurrentHashMap<Session, String>();
+    private static final ConcurrentHashMap<Session, String> map = new ConcurrentHashMap<>();
 
     @OnOpen
-    public void onOpen(Session session) {;
+    public void onOpen(Session session) {
         System.out.println(session);
         map.put(session, "");
         init();
     }
 
     @OnMessage
-    public void onMessage(String message, Session session) throws IOException {
+    public void onMessage(String message, Session session) {
         String ownerPhoneNumber = getOwnerPhone(message);
 
         System.out.println("------");
@@ -54,8 +52,6 @@ public class RabbitWebSocket {
 
     private void doMessage(String message) {
         String ownerPhoneNumber = getOwnerPhone(message);
-
-        Session currentSession = null;
 
         for (Map.Entry<Session, String> entry : map.entrySet()) {
             Session key = entry.getKey();
