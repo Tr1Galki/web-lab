@@ -121,6 +121,12 @@ input[type="checkbox"], input[type="radio"] {
     display: none;
 }
 
+.new_error {
+    padding-bottom: 6px;
+    color: red;
+    display: none;
+}
+
 #empty_X, #empty_Y, #empty_R {
     display: block;
 }

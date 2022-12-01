@@ -18,27 +18,38 @@
 
 
 <header class="header">
-    <div class="info--student">
-        Gasyuk Aleksandr P32131
+    <div class="horizon">
+        <div class="info--student">
+            Gasyuk Aleksandr P32131
+        </div>
+        <div class="info--work">
+            <div class="info--work__lesson">
+                Web-programming
+            </div>
+            <div class="info--work__lab">
+                Lab N2 Variant N1206
+            </div>
+        </div>
     </div>
-    <div class="info--work">
-        <div class="info--work__lesson">
-            Web-programming
-        </div>
-        <div class="info--work__lab">
-            Lab N2 Variant N1206
-        </div>
+    <div id="phone_container" class="horizon">
+        <fieldset class="form__group" id="phone_container_form">
+            <legend>Share dots to number</legend>
+            <div>
+                <input type="text" id="choose_number">
+            </div>
+            <div class="new_error" id="no_dot_selected">
+                No dots selected
+            </div>
+            <div class="new_error" id="user_not_exist">
+                This user does not exist
+            </div>
+            <div>
+                <button id="send_dots_button">SEND</button>
+            </div>
+        </fieldset>
     </div>
 </header>
 
-<button id="send_dots_button">NEED FUNC</button>
-Number:<input type="text" id="choose_number">
-<div class="error" id="no_dot_selected">
-    no dots selected
-</div>
-<div class="error" id="user_not_exist">
-    this user does not exist
-</div>
 
 <div class="main">
     <div class="form__container">
@@ -59,7 +70,7 @@ Number:<input type="text" id="choose_number">
                     <input type="radio" id="x4" name="x_param" value="-0.5">
                     <label for="x4">-0.5</label>
 
-                    <input type="radio" id="x5" name="x_param" value="0">
+                    <input type="radio" id="x5" name="x_param" value="0" checked>
                     <label for="x5">0</label>
 
                     <input type="radio" id="x6" name="x_param" value="0.5">
@@ -110,7 +121,7 @@ Number:<input type="text" id="choose_number">
                     Please select R
                 </div>
                 <div class="button--sender">
-                    <button type="submit" id="submit_button" >Submit</button>
+                    <button type="submit" id="submit_button">Submit</button>
                 </div>
             </fieldset>
         </form>

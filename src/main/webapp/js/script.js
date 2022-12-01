@@ -11,11 +11,6 @@ let formValueX,
 
 const listOfDots = [];
 
-// sendDataToServer({
-//     requestType: 'connMake',
-//     ownerNumber: userPhone
-// }, listDotsHandler)
-
 const socket = new WebSocket("ws://localhost:8080/server-1.0-SNAPSHOT/web-socket");
 
 socket.onopen = () => {
