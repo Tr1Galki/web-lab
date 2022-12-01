@@ -43,6 +43,8 @@ function socketHandler() {
     }
     window.onbeforeunload = () => {
         // socket.close();
+        sessionStorage.setItem('user_id', userID);
+        sessionStorage.setItem('user_phone_number', userPhone);
     }
     socket.onmessage = function (e) {
         try {
