@@ -13,7 +13,7 @@ public class Dot {
     public Dot() {
     }
 
-    public Dot(Boolean isInArea, Double x, Double y, Double r, Date date, Integer time, String owner) {
+    public Dot(Boolean isInArea, Double x, Double y, Double r, Date date, Integer time, String owner, String creator) {
         this.inArea = isInArea;
         this.x = x;
         this.y = y;
@@ -21,6 +21,7 @@ public class Dot {
         this.date = date;
         this.time = time;
         this.owner = owner;
+        this.creator = creator;
     }
 
     public Boolean getInArea() {
@@ -81,5 +82,13 @@ public class Dot {
 
     public void setOwner(String owner) {
         this.owner = owner;
+    }
+
+    public String getCreator() {
+        return creator;
+    }
+
+    public void setCreator(String creator) {
+        this.creator = creator;
     }
 }

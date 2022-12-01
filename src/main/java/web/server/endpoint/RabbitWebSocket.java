@@ -29,11 +29,7 @@ public class RabbitWebSocket {
     @OnMessage
     public void onMessage(String message, Session session) {
         String ownerPhoneNumber = getOwnerPhone(message);
-
-        System.out.println("------");
-        System.out.println(map);
         map.put(session, ownerPhoneNumber);
-        System.out.println(map);
         rabbitSend(message);
     }
 
@@ -58,9 +54,6 @@ public class RabbitWebSocket {
             String value = entry.getValue();
             if (value.equals(ownerPhoneNumber)) {
                 try {
-                    System.out.println("[sending]");
-                    System.out.println(map);
-                    System.out.println(value);
                     key.getAsyncRemote().sendText(message);
                     return;
                 } catch (Exception e) {
@@ -68,9 +61,6 @@ public class RabbitWebSocket {
                 }
             }
         }
-
-
-        //        queue.peek().getAsyncRemote().sendText("your session: " + queue.peek().toString() + " message: " + message);
     }
 
     private void handling(String message) throws IOException {
@@ -120,6 +110,7 @@ public class RabbitWebSocket {
     }
 
     private String getOwnerPhone(String message) {
+        System.out.println(message);
         JSONObject json = new JSONObject(message);
         return json.get("ownerPhoneNumber").toString();
     }

@@ -53,9 +53,10 @@ public class DBConnector {
                 String date = rs.getString("date");
                 Integer time = rs.getInt("time");
                 String owner = rs.getString("owner");
+                String creator = rs.getString("creator");
                 DateFormat format = new SimpleDateFormat("EEE MMM dd HH:mm:ss ZZZ yyyy", Locale.ENGLISH);
                 Date newDate = format.parse(date);
-                Dot dot = new Dot(isArea, x, y, r, newDate, time, owner);
+                Dot dot = new Dot(isArea, x, y, r, newDate, time, owner, creator);
                 list.add(dot);
             }
 
@@ -69,20 +70,22 @@ public class DBConnector {
 
     public static Boolean isUserExist(String number) {
         String SELECT_USER_SQL =
-                "SELECT 1 FROM users " +
-                        "WHERE 'phone_number' = '" + number + "'";
+                "SELECT * FROM users " +
+                        "WHERE phone_number = '" + number + "'";
+
+        Boolean answer = null;
 
         try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD);
         PreparedStatement preparedStatement = connection.prepareStatement(SELECT_USER_SQL)) {
 
             ResultSet rs = preparedStatement.executeQuery();
-
-            return !rs.next();
+            answer = rs.next();
 
         } catch (SQLException e) {
             printSQLException(e);
         }
-        return false;
+
+        return answer;
     }
 
     public static void addUser(String ownerID, String number) {
@@ -90,7 +93,8 @@ public class DBConnector {
         String INSERT_DOTS_SQL =
                 "INSERT INTO users (id, phone_number) " +
                         "VALUES " + values;
-
+        
+        System.out.println(isUserExist(number));
         if (!isUserExist(number)) {
             SQLExecutor(INSERT_DOTS_SQL);
         }

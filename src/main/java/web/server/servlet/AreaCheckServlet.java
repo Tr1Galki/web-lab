@@ -2,7 +2,6 @@ package web.server.servlet;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -21,7 +20,8 @@ public class AreaCheckServlet extends HttpServlet {
         String yStr = request.getParameter("y");
         String rStr = request.getParameter("r");
         String startTime = request.getParameter("startTime");
-        String owner = request.getParameter("ownerID");
+        String owner = request.getParameter("owner");
+        String creator = request.getParameter("creator");
         String jsonResponse;
 
         //TODO: добавить всякие обработки пользователя, бд и т.п.
@@ -29,7 +29,7 @@ public class AreaCheckServlet extends HttpServlet {
         boolean isValid = isCorrectX(xStr) && isCorrectY(yStr) && isCorrectR(rStr);
         if (isValid) {
             boolean isInArea = isInArea(xStr, yStr, rStr);
-            jsonResponse = makeCorrectResponse(isInArea, xStr, yStr, rStr, startTime, owner);
+            jsonResponse = makeCorrectResponse(isInArea, xStr, yStr, rStr, startTime, owner, creator);
         } else {
             jsonResponse = makeIncorrectResponse();
         }
@@ -40,15 +40,13 @@ public class AreaCheckServlet extends HttpServlet {
         out.flush();
     }
 
-    private String makeCorrectResponse(boolean isInArea, String x, String y, String r, String startTime, String owner) {
+    private String makeCorrectResponse(boolean isInArea, String x, String y, String r, String startTime, String owner, String creator) {
         Date date = new Date(System.currentTimeMillis());
         long time = System.currentTimeMillis() - Long.parseLong(startTime);
 
         Dot dot = new Dot(isInArea, Double.parseDouble(x), Double.parseDouble(y), Double.parseDouble(r),
-                date, (int) time, owner);
-        //добавить обработку DB
+                date, (int) time, owner, creator);
 
-        //TODO: добавить обработку DB
         DBHandler dbHandler = new DBHandler();
         dbHandler.addDot(dot);
 

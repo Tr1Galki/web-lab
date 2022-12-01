@@ -1,5 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<jsp:useBean id="entries" class="web.server.bean.UserBean" scope="session"/>
+<%@ page contentType="text/html;charset=UTF-8" %>
 <html lang="ru">
 <head>
     <title>lab1</title>
@@ -32,7 +31,14 @@
     </div>
 </header>
 
-<button id="print_dots">NEED FUNC</button>
+<button id="send_dots_button">NEED FUNC</button>
+Number:<input type="text" id="choose_number">
+<div class="error" id="no_dot_selected">
+    no dots selected
+</div>
+<div class="error" id="user_not_exist">
+    this user does not exist
+</div>
 
 <div class="main">
     <div class="form__container">
@@ -129,8 +135,8 @@
             <th scope="col">R value</th>
             <th scope="col">Date</th>
             <th scope="col">Script's time</th>
-            <th scope="col">Owner</th>
-            <th scope="col" class="choose_col">Choose</th>
+            <th scope="col">Creator</th>
+            <th scope="col" class="choose_col">Select</th>
         </tr>
         </tbody>
     </table>

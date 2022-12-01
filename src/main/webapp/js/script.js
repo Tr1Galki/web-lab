@@ -9,8 +9,6 @@ let formValueX,
     formValueY,
     formValueR;
 
-let chosenDots = [];
-
 const listOfDots = [];
 
 // sendDataToServer({
@@ -18,10 +16,10 @@ const listOfDots = [];
 //     ownerNumber: userPhone
 // }, listDotsHandler)
 
-let socket = new WebSocket("ws://localhost:8080/server-1.0-SNAPSHOT/web-socket");
+const socket = new WebSocket("ws://localhost:8080/server-1.0-SNAPSHOT/web-socket");
 
 socket.onopen = () => {
-    console.log("Соединение успешно перешло на протокол WebSocket");
+    console.log("Successful WebSocket connection");
     socketHandler();
     let getDots = {
         type: "getAllDots",
@@ -52,11 +50,20 @@ function socketHandler() {
         // socket.close();
     }
     socket.onmessage = function (e) {
-        console.log(e.data)
-        try{
+        try {
             let jsonResponse = JSON.parse(e.data);
             switch (jsonResponse.type) {
-                case("allDots"): {
+                case ("allDots"): {
+                    listDotsHandler(jsonResponse.array);
+                    break;
+                }
+                case ("sentDots"): {
+                    if (jsonResponse.result === "userNotExist") {
+                        userError("user_not_exist");
+                    }
+                    break;
+                }
+                case ("receivedDots"): {
                     listDotsHandler(jsonResponse.array);
                     break;
                 }
@@ -70,38 +77,33 @@ function socketHandler() {
     }
 }
 
-let testButton = document.querySelector("#print_dots");
-testButton.addEventListener("click", () => {
+let sendDotsButton = document.querySelector("#send_dots_button");
+sendDotsButton.addEventListener("click", () => {
     getChosenDots();
 })
 
 function getChosenDots() {
-    let inputDots = document.querySelectorAll("input[name='dot_param']");
+    let inputNumberElem = document.querySelector("#choose_number");
 
-    for (let i = 0; i < inputDots.length; i++) {
-        inputDots[i].addEventListener("change", (e) => {
-            let dotNumber = e.target.value;
-            if (!inputDots) {
-                inputDots = [];
-            }
-            if (e.target.checked) {
-                if (!chosenDots.includes(listOfDots[dotNumber])) {
-                    chosenDots.push(listOfDots[dotNumber]);
-                }
-            } else {
-                let index = chosenDots.indexOf(listOfDots[dotNumber]);
-                if (index !== -1) {
-                    chosenDots.splice(index, 1);
-                }
-            }
-            // let elem = document.querySelector("#empty_R");
-            // if (formValueR.length === 0) {
-            //     elem.style.display = "block";
-            // } else {
-            //     elem.style.display = "none";
-            // }
-            console.log(chosenDots);
-        })
+    let currentDots;
+    let checkedDots = document.querySelectorAll("input[name='dot_param']:checked");
+
+    if (checkedDots.length !== 0) {
+        currentDots = [];
+        for (let dotIndex = 0; dotIndex < checkedDots.length; dotIndex++) {
+            currentDots.push(listOfDots[checkedDots[dotIndex].value]);
+        }
+        let data = {
+            type: "sendDots",
+            ownerID: userID,
+            ownerPhoneNumber: userPhone,
+            array: currentDots,
+            targetPhoneNumber: inputNumberElem.value
+        }
+        socketSend(JSON.stringify(data));
+    } else {
+        userError("no_dot_selected");
+        return null;
     }
 }
 
@@ -202,7 +204,8 @@ function submitEvent(e) {
                 y: newValueY,
                 r: newValueR[i],
                 startTime: new Date().getTime(),
-                ownerID: userPhone
+                owner: userPhone,
+                creator: userPhone
             }
             sendDataToServlet(data, addJsonDot);
         }
@@ -289,10 +292,6 @@ function getR(currR) {
     }
 }
 
-function dotsSetter(response) {
-    window.listDots = JSON.parse(response);
-}
-
 function sendDataToServlet(data, requestHandler) {
     let servletUrl = '/server-1.0-SNAPSHOT/ControllerServlet';
     $.ajax({
@@ -327,15 +326,15 @@ function requestToTable(response, size) {
             new_row.insertCell(3).appendChild(document.createTextNode('R value'));
             new_row.insertCell(4).appendChild(document.createTextNode('Date'));
             new_row.insertCell(5).appendChild(document.createTextNode('Script\'s time'));
-            new_row.insertCell(6).appendChild(document.createTextNode('Owner'));
-            new_row.insertCell(7).appendChild(document.createTextNode('Choose'));
+            new_row.insertCell(6).appendChild(document.createTextNode('Creator'));
+            new_row.insertCell(7).appendChild(document.createTextNode('Select'));
         }
         let checkBox = document.createElement("div");
         checkBox.setAttribute("class", "group--buttons");
         checkBox.setAttribute("style", "text-align: center; margin: 0 auto;\n");
         checkBox.innerHTML = "<input type=\"checkbox\" id=\"dot" + size + "\" name=\"dot_param\" value=\"" +
             size + "\" style='text-align: center; margin: 0 auto;'>\n" +
-            "<label for=\"dot" + size +"\">✓</label>";
+            "<label for=\"dot" + size + "\">✓</label>";
 
         let table = document.querySelector(".table--main")
         let new_row = table.insertRow(1);
@@ -352,7 +351,7 @@ function requestToTable(response, size) {
         // new_row.insertCell(4).appendChild(document.createTextNode(response.date));
         cell4.appendChild(document.createTextNode(response.date));
         new_row.insertCell(5).appendChild(document.createTextNode(response.time));
-        new_row.insertCell(6).appendChild(document.createTextNode(response.owner));
+        new_row.insertCell(6).appendChild(document.createTextNode(response.creator));
         let cell7 = new_row.insertCell(7);
         cell7.setAttribute("style", "padding-left: 65px; padding-right: 65px;");
         cell7.appendChild(checkBox);
@@ -383,7 +382,8 @@ function canvasEvent(x, y) {
                 y: y,
                 r: r[i],
                 startTime: new Date().getTime(),
-                ownerID: userPhone
+                owner: userPhone,
+                creator: userPhone
             }
             sendDataToServlet(data, addJsonDot);
         }
@@ -407,10 +407,8 @@ function canvasDraw(canvas) {
 
     function getCursorPosition(canvas, event) {
         const rect = canvas.getBoundingClientRect();
-        console.log(rect);
         const x = (event.clientX - rect.left) / (RADIUS / 2) - WIDTH / RADIUS;
         const y = -(event.clientY - rect.top) / (RADIUS / 2) + HEIGHT / RADIUS;
-        console.log(event);
         canvasEvent(x, y);
     }
 

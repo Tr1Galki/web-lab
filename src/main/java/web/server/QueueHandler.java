@@ -5,16 +5,18 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import web.server.data_base.DBHandler;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 public class QueueHandler {
-
 
 
     public static void run() {
@@ -46,33 +48,69 @@ public class QueueHandler {
     }
 
     private static void handling(String jsonMessage) {
-//        JSONObject json = new JSONObject(jsonMessage);
-//        String ownerNumber = json.get("ownerNumber").toString();
-//
-//        Gson gson = new Gson();
-//        String jsonResponse = "{\"type\": \"getDotsByDB\", \"owner\": \"" + ownerNumber + "\"}";
-//
-//        System.out.println(jsonResponse);
-//        send(jsonResponse);
 
 
         Gson gson = new Gson();
         JSONObject json = new JSONObject(jsonMessage);
         String type = json.get("type").toString();
+
+        String ownerPhone = json.get("ownerPhoneNumber").toString();
+        String ownerID = json.get("ownerID").toString();
+        String jsonResponse;
+
         switch (type) {
             case ("getAllDots"): {
-                String ownerPhone = json.get("ownerPhoneNumber").toString();
-                String ownerID = json.get("ownerID").toString();
                 DBHandler dbHandler = new DBHandler();
-
                 dbHandler.addUserIfNotExist(ownerID, ownerPhone);
 
                 List<Dot> list = dbHandler.getDotsByUser(ownerPhone);
-                String jsonResponse;
-                jsonResponse = "{\"type\":\"allDots\"," +
-                        "\"ownerPhoneNumber\":\"" + ownerPhone + "\","+
-                        " \"array\": " + gson.toJson(list) + "}";
+                jsonResponse = "{" +
+                        "\"type\":\"allDots\"," +
+                        "\"ownerPhoneNumber\":\"" + ownerPhone + "\"," +
+                        " \"array\": " + gson.toJson(list) +
+                        "}";
 
+                send(jsonResponse);
+                break;
+            }
+            case ("sendDots"): {
+                String targetPhoneNumber = json.get("targetPhoneNumber").toString();
+
+                DBHandler dbHandler = new DBHandler();
+                if (dbHandler.isUserExist(targetPhoneNumber)) {
+                    String stringArray = json.get("array").toString();
+
+                    String extraJsonResponse = "{" +
+                            "\"type\":\"receivedDots\"," +
+                            "\"ownerPhoneNumber\":\"" + targetPhoneNumber + "\"," +
+                            "\"array\":" + stringArray +
+                            "}";
+                    jsonResponse = "{" +
+                            "\"type\":\"sentDots\"," +
+                            "\"ownerPhoneNumber\":\"" + ownerPhone + "\"," +
+                            "\"result\":\"dotsAdded\"" +
+                            "}";
+
+                    JSONArray array = new JSONArray(stringArray);
+                    LinkedList<Dot> linkedList = new LinkedList<>();
+                    for (int i = 0; i < array.length(); i++) {
+                        JSONObject elem = new JSONObject(array.get(i).toString());
+                        Dot dot = new Dot(elem.getBoolean("inArea"), elem.getDouble("x"), elem.getDouble("y"),
+                                elem.getDouble("r"), new Date(elem.getString("date")), elem.getInt("time"),
+                                targetPhoneNumber, elem.getString("creator"));
+                        linkedList.add(dot);
+                    }
+
+                    dbHandler.sendToTarget(linkedList);
+                    send(extraJsonResponse);
+
+                } else {
+                    jsonResponse = "{" +
+                            "\"type\":\"sentDots\"," +
+                            "\"ownerPhoneNumber\":\"" + ownerPhone + "\"," +
+                            "\"result\":\"userNotExist\"" +
+                            "}";
+                }
                 send(jsonResponse);
                 break;
             }
