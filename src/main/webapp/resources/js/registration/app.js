@@ -59,7 +59,7 @@ function handlingSMSNumber() {
             const user = result.user;
             sessionStorage.setItem('user_id', user.uid);
             sessionStorage.setItem('user_phone_number', user.phoneNumber);
-            window.location.replace('./jsp/main.jsp');
+            window.location.replace('/server-1.0-SNAPSHOT/main.xhtml');
     }).catch((error) => {
         userError('invalid_sms_code');
     });

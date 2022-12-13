@@ -2,7 +2,7 @@ const userID = sessionStorage.getItem('user_id');
 const userPhone = sessionStorage.getItem('user_phone_number');
 
 if (!userID) {
-    window.location.replace("../index.jsp");
+    window.location.replace("../index.xhtml");
 }
 
 let formValueX,
