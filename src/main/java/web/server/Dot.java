@@ -1,8 +1,12 @@
 package web.server;
 
+import jakarta.persistence.Entity;
+
+import java.io.Serializable;
 import java.util.Date;
 
-public class Dot {
+//@Entity(name = "Dot")
+public class Dot implements Serializable {
     private Boolean inArea;
     private Double x, y, r;
     private Date date;

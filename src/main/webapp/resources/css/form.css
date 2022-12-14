@@ -9,7 +9,7 @@ legend {
     align-items: center;
 }
 
-button {
+button, input[type=submit] {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
@@ -24,10 +24,28 @@ button {
     margin: 0 auto;
 }
 
-button:hover {
+button:hover, input[type=submit]:hover {
     background-color: white;
     color: #282828;
     transition: .25s all ease;
+}
+
+#x_container table, #x_container tbody, #x_container tr, #x_container td{
+    all: initial;
+    font: inherit;
+    color: inherit;
+    height: 100%;
+    /*text-align: center;*/
+    /*margin: 0 auto;*/
+}
+
+#r_container table, #r_container tbody, #r_container tr, #r_container td{
+    all: initial;
+    font: inherit;
+    color: inherit;
+    height: 100%;
+    /*text-align: center;*/
+    /*margin: 0 auto;*/
 }
 
 input {
@@ -73,7 +91,8 @@ input:focus {
     box-sizing: border-box;
     content: " ";
     position: absolute;
-    top: 0.3em;
+    /*top: 0.3em;*/
+    top: -0.1em;
     left: 0;
     display: block;
     width: 1.4em;
@@ -82,6 +101,13 @@ input:focus {
     border-radius: .25em;
     z-index: -1;
 }
+
+
+/*#x_container td{*/
+/*    all: initial;*/
+/*    font: inherit;*/
+/*    color: inherit;*/
+/*}*/
 
 input[type="radio"] + label::before {
     border-radius: 1em;
@@ -94,7 +120,7 @@ input[type="checkbox"]:checked + label, input[type="radio"]:checked + label {
 }
 
 input[type="checkbox"]:checked + label:before, input[type="radio"]:checked + label:before {
-    top: 0;
+    top: -0.3em;
     width: 100%;
     height: 2em;
     background: white;

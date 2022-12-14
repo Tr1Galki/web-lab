@@ -117,7 +117,7 @@ function addDot(dot) {
     canvasDrawDots(canvas, dot);
 }
 
-let inputFormX = document.querySelectorAll("input[name='x_param']");
+let inputFormX = document.querySelectorAll("input[name='j_idt3:x_param']");
 
 for (let i = 0; i < inputFormX.length; i++) { //when page start, x is undefined
     inputFormX[i].addEventListener("change", (e) => {
@@ -127,7 +127,7 @@ for (let i = 0; i < inputFormX.length; i++) { //when page start, x is undefined
     })
 }
 
-let inputFormY = document.querySelector("#y_input");
+let inputFormY = document.querySelector("input[name='j_idt3:y_input']");
 
 inputFormY.addEventListener("input", (e) => {
     formValueY = e.target.value;
@@ -156,7 +156,7 @@ inputFormY.addEventListener("input", (e) => {
     }
 })
 
-let inputFormR = document.querySelectorAll("input[name='r_param']");
+let inputFormR = document.querySelectorAll("input[name='j_idt3:r_param']");
 
 for (let i = 0; i < inputFormR.length; i++) {
     inputFormR[i].addEventListener("change", (e) => {
@@ -183,37 +183,37 @@ for (let i = 0; i < inputFormR.length; i++) {
     })
 }
 
-let submit = document.querySelector("#submit_button");
+let submit = document.querySelector("input[name='j_idt3:submit_button']");
 
 submit.addEventListener("click", submitEvent);
 
 function submitEvent(e) {
-    e.preventDefault()
-    let newValueX = getX(formValueX);
-    let newValueY = getY(formValueY);
-    let newValueR = getR(formValueR);
-
-    if (newValueX && (newValueY || newValueY === 0) && newValueR) {
-        for (let i = 0; i < newValueR.length; i++) {
-            let data = {
-                requestType: 'areaReq',
-                x: newValueX,
-                y: newValueY,
-                r: newValueR[i],
-                startTime: new Date().getTime(),
-                owner: userPhone,
-                creator: userPhone
-            }
-            sendDataToServlet(data, addJsonDot);
-        }
-    }
+    // e.preventDefault()
+    // let newValueX = getX(formValueX);
+    // let newValueY = getY(formValueY);
+    // let newValueR = getR(formValueR);
+    //
+    // if (newValueX && (newValueY || newValueY === 0) && newValueR) {
+    //     for (let i = 0; i < newValueR.length; i++) {
+    //         let data = {
+    //             requestType: 'areaReq',
+    //             x: newValueX,
+    //             y: newValueY,
+    //             r: newValueR[i],
+    //             startTime: new Date().getTime(),
+    //             owner: userPhone,
+    //             creator: userPhone
+    //         }
+    //         sendDataToServlet(data, addJsonDot);
+    //     }
+    // }
 }
 
 function getX(currX) {
     if ([-2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2].includes(parseFloat(currX))) {
         return currX;
     }
-    let currFormX = document.querySelectorAll("input[name='x_param']");
+    let currFormX = document.querySelectorAll("input[name='j_idt3:x_param']");
     if (currFormX.length !== 9) {
         location.reload();
     } else {
@@ -253,7 +253,7 @@ function getY(currY) {
 
 function getR(currR) {
     if (!currR) {
-        let currFormR = document.querySelectorAll("input[name='r_param']");
+        let currFormR = document.querySelectorAll("input[name='j_idt3:r_param']");
         if (currFormR.length !== 5) {
             location.reload();
         } else {
@@ -271,7 +271,7 @@ function getR(currR) {
             if (isCorrect) {
                 return currR;
             } else {
-                let currFormR = document.querySelectorAll("input[name='r_param']:checked");
+                let currFormR = document.querySelectorAll("input[name='j_idt3:r_param']:checked");
                 if (currFormR.length !== 0) {
                     currR = [];
                     for (let i = 0; i < currFormR.length; i++) {
@@ -290,13 +290,13 @@ function getR(currR) {
 }
 
 function sendDataToServlet(data, requestHandler) {
-    let servletUrl = '/server-1.0-SNAPSHOT/ControllerServlet';
-    $.ajax({
-        type: 'POST',
-        url: servletUrl,
-        data: data,
-        success: (response) => requestHandler(response)
-    });
+    // let servletUrl = '/server-1.0-SNAPSHOT/ControllerServlet';
+    // $.ajax({
+    //     type: 'POST',
+    //     url: servletUrl,
+    //     data: data,
+    //     success: (response) => requestHandler(response)
+    // });
 }
 
 function addJsonDot(json) {
