@@ -5,7 +5,6 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 import jakarta.annotation.PostConstruct;
-import jakarta.ejb.EJB;
 import jakarta.faces.push.Push;
 import jakarta.faces.push.PushContext;
 import jakarta.faces.view.ViewScoped;
@@ -28,7 +27,7 @@ public class WebSocketBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        rOptions = new LinkedHashMap<String, String>();
+        rOptions = new LinkedHashMap<>();
         rOptions.put("1", "1");
         rOptions.put("1.5", "1.5");
         rOptions.put("2", "2");
@@ -40,34 +39,52 @@ public class WebSocketBean implements Serializable {
     @Push(channel="incoming")
     private PushContext incoming;
 
-    @EJB
-    private MessageService msgService;
-
     private String x;
+    private String canvasX;
     private String y;
+    private String canvasY;
     private String[] r;
+    private String canvasR;
+    private String date;
+    private String time;
+    private String hiddenPhoneNumber;
+    private String hiddenUserID;
     private Map<String, String> rOptions;
     private String owner;
     private String creator;
+    private String target;
 
     private Dot dot;
 
-
-    private String enteredMessage;
-
-    public List<String> getMessages() {
-        return msgService.getMessages();
+    public void mainSubmitButton() {
+        //TODO: add realisation of main button
     }
 
-    public void receiveMessage() {;
+    public void hiddenSubmitButton() {
+        //TODO: add realisation of hidden button
+    }
+
+    public void onOpen() {
+        //todo: add realisation of onOpen event
+
+        //     let getDots = {
+        //         type: "getAllDots",
+        //         ownerID: userID,
+        //         ownerPhoneNumber: userPhone
+        //     }
+        //     socketSend(JSON.stringify(getDots));
+    }
+
+    public void sendDotsToOther() {
+        //TODO: стандартно добавить реализацию
+    }
+
+    public void receiveMessage() {
         //TODO: реализовать забор данных с xhtml
     }
 
     public void doMessage(String message) {
-        System.out.println("send-start");
-        incoming.send("dot" );
-        System.out.println("send-stop");
-        System.out.println("---");
+        //TODO: реалтзовать отправку на js
     }
 
 
@@ -125,14 +142,6 @@ public class WebSocketBean implements Serializable {
         this.dot = dot;
     }
 
-    public String getEnteredMessage() {
-        return enteredMessage;
-    }
-
-    public void setEnteredMessage(String enteredMessage) {
-        this.enteredMessage = enteredMessage;
-    }
-
     public String getX() {
         return x;
     }
@@ -149,6 +158,30 @@ public class WebSocketBean implements Serializable {
         this.y = y;
     }
 
+    public String getCanvasX() {
+        return canvasX;
+    }
+
+    public void setCanvasX(String canvasX) {
+        this.canvasX = canvasX;
+    }
+
+    public String getCanvasY() {
+        return canvasY;
+    }
+
+    public void setCanvasY(String canvasY) {
+        this.canvasY = canvasY;
+    }
+
+    public String getCanvasR() {
+        return canvasR;
+    }
+
+    public void setCanvasR(String canvasY) {
+        this.canvasR = canvasY;
+    }
+
     public String[] getR() {
         return r;
     }
@@ -157,12 +190,44 @@ public class WebSocketBean implements Serializable {
         this.r = r;
     }
 
-    public Map getrOptions() {
+    public Map<String, String> getrOptions() {
         return rOptions;
     }
 
-    public void setrOptions(Map rOptions) {
+    public void setrOptions(Map<String, String> rOptions) {
         this.rOptions = rOptions;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
+
+    public String getHiddenPhoneNumber() {
+        return hiddenPhoneNumber;
+    }
+
+    public void setHiddenPhoneNumber(String hiddenPhoneNumber) {
+        this.hiddenPhoneNumber = hiddenPhoneNumber;
+    }
+
+    public String getHiddenUserID() {
+        return hiddenUserID;
+    }
+
+    public void setHiddenUserID(String hiddenUserID) {
+        this.hiddenUserID = hiddenUserID;
     }
 
     public String getOwner() {
@@ -179,5 +244,13 @@ public class WebSocketBean implements Serializable {
 
     public void setCreator(String creator) {
         this.creator = creator;
+    }
+
+    public String getTarget() {
+        return target;
+    }
+
+    public void setTarget(String target) {
+        this.target = target;
     }
 }

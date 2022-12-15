@@ -46,7 +46,7 @@ div#phone_container {
 #phone_container_form {
     width: 100%;
 }
-#choose_number {
+.target_input {
     margin-top: 11px;
     margin-bottom: 15px;
 }
@@ -118,6 +118,14 @@ td:hover, th:hover {
 
 th.choose_col {
     width: auto;
+}
+
+.hidden{
+    visibility: hidden;
+}
+
+.hidden *{
+    visibility: hidden;
 }
 
 /* ---- particles.js container ---- */

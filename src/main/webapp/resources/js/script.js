@@ -3,6 +3,13 @@ const userPhone = sessionStorage.getItem('user_phone_number');
 
 if (!userID) {
     window.location.replace("../index.xhtml");
+} else {
+    document.querySelectorAll(".hidden-user-id").forEach(e => {
+        e.value = userID;
+    });
+    document.querySelectorAll(".hidden-phone-number").forEach(e => {
+        e.value = userPhone;
+    });
 }
 
 let formValueX,
@@ -13,32 +20,13 @@ const listOfDots = [];
 
 function socketHandler(message, channel, event) {
     console.log(message);
-    console.log(channel);
-    console.log(event);
+    //TODO: add handling of input data (old socketHandler func)
 }
 
-// const socket = new WebSocket("ws://localhost:8080/server-1.0-SNAPSHOT/web-socket");
-
-// socket.onopen = () => {
-//     console.log("Successful WebSocket connection");
-//     socketHandler();
-//     let getDots = {
-//         type: "getAllDots",
-//         ownerID: userID,
-//         ownerPhoneNumber: userPhone
-//     }
-//     socketSend(JSON.stringify(getDots));
-// }
-
-// function socketSend(data) {
-//     if (socket.readyState) {
-//         socket.send(data);
-//     } else {
-//         setTimeout(() => {
-//             socketSend(data);
-//         }, 200);
-//     }
-// }
+function socketOnOpen() {
+    console.log("Successful websocket connection");
+    document.querySelector(".hidden_on_open_button").click();
+}
 
 // function socketHandler() {
 //     socket.onerror = () => {
@@ -80,13 +68,13 @@ function socketHandler(message, channel, event) {
 //     }
 // }
 
-// let sendDotsButton = document.querySelector("#send_dots_button");
-// sendDotsButton.addEventListener("click", () => {
-//     getChosenDots();
-// })
+let sendDotsButton = document.querySelector("#send_dots_button");
+sendDotsButton.addEventListener("click", () => {
+    getChosenDots();
+})
 
 function getChosenDots() {
-    let inputNumberElem = document.querySelector("#choose_number");
+    let inputNumberElem = document.querySelector(".target_input");
 
     let currentDots;
     let checkedDots = document.querySelectorAll("input[name='dot_param']:checked");
@@ -103,6 +91,8 @@ function getChosenDots() {
             array: currentDots,
             targetPhoneNumber: inputNumberElem.value
         }
+
+
         socketSend(JSON.stringify(data));
     } else {
         userError("no_dot_selected");
@@ -249,16 +239,6 @@ function getR(currR) {
     }
 }
 
-// function sendDataToServlet(data, requestHandler) {
-//     let servletUrl = '/server-1.0-SNAPSHOT/ControllerServlet';
-//     $.ajax({
-//         type: 'POST',
-//         url: servletUrl,
-//         data: data,
-//         success: (response) => requestHandler(response)
-//     });
-// }
-
 function addJsonDot(json) {
     addDot(JSON.parse(json));
 }
@@ -332,22 +312,16 @@ function canvasEvent(x, y) {
         for (let i = 0; i < r.length; i++) {
             x = Math.round(x * r[i] * 100) / 100;
             y = Math.round(y * r[i] * 100) / 100;
-            let data = {
-                requestType: 'areaReq',
-                x: x,
-                y: y,
-                r: r[i],
-                startTime: new Date().getTime(),
-                owner: userPhone,
-                creator: userPhone
-            }
-            sendDataToServlet(data, addJsonDot);
+            setDotToHiddenForm(x, y, r[i])
         }
     }
 }
 
-function setDotToFakeForm() {
-
+function setDotToHiddenForm(x, y, r) {
+    document.querySelector(".canvas-x").value = x;
+    document.querySelector(".canvas-y").value = y;
+    document.querySelector(".canvas-r").value = r;
+    document.querySelector(".hidden_submit_button").click();
 }
 
 const WIDTH = 350;
