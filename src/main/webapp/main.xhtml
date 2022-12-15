@@ -5,6 +5,8 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+
 <f:view>
 
     <title>dot lab</title>
@@ -59,7 +61,7 @@
                         <span class="group--text"> X:</span>
                         <h:selectOneRadio id="x_param" value="#{webSocketBean.x}">
                             <f:selectItem itemLabel="-2" itemValue="-2"/>
-                            <f:selectItem itemLabel="-1.5" itemValue="-1.5"/>
+                            <f:selectItem itemLabel="-1.5" itemValue="-1.5" id="kek"/>
                             <f:selectItem itemLabel="-1" itemValue="-1"/>
                             <f:selectItem itemLabel="-0.5" itemValue="-0.5"/>
                             <f:selectItem itemLabel="0" itemValue="0"/>
@@ -101,7 +103,7 @@
                     <div class="error" id="empty_X">
                         Please select X
                     </div>
-                    <div class="group--buttons">
+                    <div class="group--buttons" id="y-container">
                         <span class="group--text">  Y: </span>
                         <h:inputText id="y_input" maxlength="15" autocomplete="off" value="#{webSocketBean.y}">
                             <f:validateDoubleRange minimum="-5" maximum="3"/>
@@ -143,14 +145,19 @@
                     </div>
                     <div class="button--sender">
                         <!--                        <button type="submit" id="submit_button">Submit</button>-->
-                        <h:commandButton value="pushToApplicationChannel" id="submit_button"
-                                         action="#{webSocketBean.sendMessage()}">
-                            <f:ajax execute="@form" render="table"/>
+                        <h:commandButton value="Submit" id="submit_button" action="#{webSocketBean.receiveMessage}">
+                            <f:ajax/>
                         </h:commandButton>
                     </div>
                 </fieldset>
             </h:form>
+
+            <h:form>
+                <!-- websockets -->
+
+            </h:form>
         </div>
+
 
         <div class="main__container">
             <div class="canvas-container">
@@ -189,25 +196,13 @@
                 <f:facet name="header">Creator</f:facet>
                 <h:outputText value="#{webSocketBean.creator}" styleClass="x-result"/>
             </h:column>
-            <th scope="col" class="choose_col">Select</th>
+            <h:column headerClass="thStyle">
+                <f:facet name="header">Select</f:facet>
+                <!--                <h:outputText value="#{webSocketBean.creator}" styleClass="x-result"/>-->
+            </h:column>
+            <!--            <th scope="col" class="choose_col">Select</th>-->
 
         </h:dataTable>
-
-
-        <!--        <table class="table&#45;&#45;main">-->
-        <!--            <tbody class="tbody&#45;&#45;main">-->
-        <!--            <tr>-->
-        <!--                <th scope="col">Is in area?</th>-->
-        <!--                <th scope="col">X value</th>-->
-        <!--                <th scope="col">Y value</th>-->
-        <!--                <th scope="col">R value</th>-->
-        <!--                <th scope="col">Date</th>-->
-        <!--                <th scope="col">Script's time</th>-->
-        <!--                <th scope="col">Creator</th>-->
-        <!--                <th scope="col" class="choose_col">Select</th>-->
-        <!--            </tr>-->
-        <!--            </tbody>-->
-        <!--        </table>-->
     </div>
 
     <!-- hidden input to get data from js -->
@@ -215,17 +210,25 @@
         <h:inputText id="hidden-phone-number" value="#{webSocketBean.owner}" styleClass="hidden"/>
     </h:form>
 
-
-    <!-- websockets -->
-    <f:websocket channel="userChannel" user="user" onmessage="onMessage"/>
-
     <!-- main scripts -->
     <script type="module" src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
     <h:outputScript name="js/script.js"/>
+    <script src="/server-1.0-SNAPSHOT/jakarta.faces.resource/faces.js.xhtml?ln=jakarta.faces"></script>
 
     <!-- particle scripts -->
     <h:outputScript name="js/libs/particles.js"/>
     <h:outputScript name="js/libs/app_particular.js"/>
+
+    <h:outputScript>
+        function socketListener(message, channel, event) {
+            socketHandler(message, channel, event);
+        }
+    </h:outputScript>
+
+    <!-- websockets -->
+    <f:websocket channel="incoming"
+                 onopen="() => {console.log('websocket connect successful')}"
+                 onmessage="socketListener"/>
 
 </f:view>
 

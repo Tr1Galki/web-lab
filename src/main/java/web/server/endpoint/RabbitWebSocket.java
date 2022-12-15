@@ -14,7 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.*;
 
-@ServerEndpoint("/web-socket")
+//@ServerEndpoint("/web-socket")
 public class RabbitWebSocket {
 
     private static final ConcurrentHashMap<Session, String> map = new ConcurrentHashMap<>();

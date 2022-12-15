@@ -11,73 +11,79 @@ let formValueX,
 
 const listOfDots = [];
 
-const socket = new WebSocket("ws://localhost:8080/server-1.0-SNAPSHOT/web-socket");
-
-socket.onopen = () => {
-    console.log("Successful WebSocket connection");
-    socketHandler();
-    let getDots = {
-        type: "getAllDots",
-        ownerID: userID,
-        ownerPhoneNumber: userPhone
-    }
-    socketSend(JSON.stringify(getDots));
+function socketHandler(message, channel, event) {
+    console.log(message);
+    console.log(channel);
+    console.log(event);
 }
 
-function socketSend(data) {
-    if (socket.readyState) {
-        socket.send(data);
-    } else {
-        setTimeout(() => {
-            socketSend(data);
-        }, 200);
-    }
-}
+// const socket = new WebSocket("ws://localhost:8080/server-1.0-SNAPSHOT/web-socket");
 
-function socketHandler() {
-    socket.onerror = () => {
-        console.log("WebSocket my error");
-    }
-    socket.onclose = () => {
-        console.log("WebSocket closed");
-    }
-    window.onbeforeunload = () => {
-        // socket.close();
-        sessionStorage.setItem('user_id', userID);
-        sessionStorage.setItem('user_phone_number', userPhone);
-    }
-    socket.onmessage = function (e) {
-        try {
-            let jsonResponse = JSON.parse(e.data);
-            switch (jsonResponse.type) {
-                case ("allDots"): {
-                    listDotsHandler(jsonResponse.array);
-                    break;
-                }
-                case ("sentDots"): {
-                    if (jsonResponse.result === "userNotExist") {
-                        userError("user_not_exist");
-                    }
-                    break;
-                }
-                case ("receivedDots"): {
-                    listDotsHandler(jsonResponse.array);
-                    break;
-                }
-                default: {
-                    console.log("no one type with: " + jsonResponse.type);
-                }
-            }
-        } catch (exception) {
-            console.log("Error. " + exception)
-        }
-    }
-}
+// socket.onopen = () => {
+//     console.log("Successful WebSocket connection");
+//     socketHandler();
+//     let getDots = {
+//         type: "getAllDots",
+//         ownerID: userID,
+//         ownerPhoneNumber: userPhone
+//     }
+//     socketSend(JSON.stringify(getDots));
+// }
 
-let sendDotsButton = document.querySelector("#send_dots_button");
-sendDotsButton.addEventListener("click", () => {
-    getChosenDots();
-})
+// function socketSend(data) {
+//     if (socket.readyState) {
+//         socket.send(data);
+//     } else {
+//         setTimeout(() => {
+//             socketSend(data);
+//         }, 200);
+//     }
+// }
+
+// function socketHandler() {
+//     socket.onerror = () => {
+//         console.log("WebSocket my error");
+//     }
+//     socket.onclose = () => {
+//         console.log("WebSocket closed");
+//     }
+//     window.onbeforeunload = () => {
+//         // socket.close();
+//         sessionStorage.setItem('user_id', userID);
+//         sessionStorage.setItem('user_phone_number', userPhone);
+//     }
+//     socket.onmessage = function (e) {
+//         try {
+//             let jsonResponse = JSON.parse(e.data);
+//             switch (jsonResponse.type) {
+//                 case ("allDots"): {
+//                     listDotsHandler(jsonResponse.array);
+//                     break;
+//                 }
+//                 case ("sentDots"): {
+//                     if (jsonResponse.result === "userNotExist") {
+//                         userError("user_not_exist");
+//                     }
+//                     break;
+//                 }
+//                 case ("receivedDots"): {
+//                     listDotsHandler(jsonResponse.array);
+//                     break;
+//                 }
+//                 default: {
+//                     console.log("no one type with: " + jsonResponse.type);
+//                 }
+//             }
+//         } catch (exception) {
+//             console.log("Error. " + exception)
+//         }
+//     }
+// }
+
+// let sendDotsButton = document.querySelector("#send_dots_button");
+// sendDotsButton.addEventListener("click", () => {
+//     getChosenDots();
+// })
 
 function getChosenDots() {
     let inputNumberElem = document.querySelector("#choose_number");
@@ -117,7 +123,7 @@ function addDot(dot) {
     canvasDrawDots(canvas, dot);
 }
 
-let inputFormX = document.querySelectorAll("input[name='j_idt3:x_param']");
+let inputFormX = document.querySelectorAll("#x_container input");
 
 for (let i = 0; i < inputFormX.length; i++) { //when page start, x is undefined
     inputFormX[i].addEventListener("change", (e) => {
@@ -127,7 +133,7 @@ for (let i = 0; i < inputFormX.length; i++) { //when page start, x is undefined
     })
 }
 
-let inputFormY = document.querySelector("input[name='j_idt3:y_input']");
+let inputFormY = document.querySelector("#y-container input");
 
 inputFormY.addEventListener("input", (e) => {
     formValueY = e.target.value;
@@ -156,7 +162,7 @@ inputFormY.addEventListener("input", (e) => {
     }
 })
 
-let inputFormR = document.querySelectorAll("input[name='j_idt3:r_param']");
+let inputFormR = document.querySelectorAll("#r_container input");
 
 for (let i = 0; i < inputFormR.length; i++) {
     inputFormR[i].addEventListener("change", (e) => {
@@ -183,73 +189,27 @@ for (let i = 0; i < inputFormR.length; i++) {
     })
 }
 
-let submit = document.querySelector("input[name='j_idt3:submit_button']");
-
-submit.addEventListener("click", submitEvent);
-
-function submitEvent(e) {
-    // e.preventDefault()
-    // let newValueX = getX(formValueX);
-    // let newValueY = getY(formValueY);
-    // let newValueR = getR(formValueR);
-    //
-    // if (newValueX && (newValueY || newValueY === 0) && newValueR) {
-    //     for (let i = 0; i < newValueR.length; i++) {
-    //         let data = {
-    //             requestType: 'areaReq',
-    //             x: newValueX,
-    //             y: newValueY,
-    //             r: newValueR[i],
-    //             startTime: new Date().getTime(),
-    //             owner: userPhone,
-    //             creator: userPhone
-    //         }
-    //         sendDataToServlet(data, addJsonDot);
-    //     }
-    // }
-}
-
-function getX(currX) {
-    if ([-2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2].includes(parseFloat(currX))) {
-        return currX;
-    }
-    let currFormX = document.querySelectorAll("input[name='j_idt3:x_param']");
-    if (currFormX.length !== 9) {
-        location.reload();
-    } else {
-        userError("empty_X");
-        return null;
-    }
-}
-
-function getY(currY) {
-    if ((!currY || !(currY.trim())) && (currY !== 0)) {
-        if (document.querySelector("#y_input")) {
-            userError("empty_Y");
-            return null;
-        } else {
-            location.reload();
-        }
-    } else {
-        currY = currY.trim().replaceAll(",", ".")
-        if (/^-?\d*(\.?\d+)?$/.test(currY)) {
-            currY = parseFloat(currY)
-            if (currY > -5 && currY < 3) {
-                return currY
-            } else {
-                userError("Y_is_out_of_range");
-                return null;
-            }
-        } else {
-            if (document.querySelector("#y_input")) {
-                userError("not_number_Y");
-                return null;
-            } else {
-                location.reload();
-            }
-        }
-    }
-}
+// function submitEvent(e) {
+// e.preventDefault()
+// let newValueX = getX(formValueX);
+// let newValueY = getY(formValueY);
+// let newValueR = getR(formValueR);
+//
+// if (newValueX && (newValueY || newValueY === 0) && newValueR) {
+//     for (let i = 0; i < newValueR.length; i++) {
+//         let data = {
+//             requestType: 'areaReq',
+//             x: newValueX,
+//             y: newValueY,
+//             r: newValueR[i],
+//             startTime: new Date().getTime(),
+//             owner: userPhone,
+//             creator: userPhone
+//         }
+//         sendDataToServlet(data, addJsonDot);
+//     }
+// }
+// }
 
 function getR(currR) {
     if (!currR) {
@@ -289,15 +249,15 @@ function getR(currR) {
     }
 }
 
-function sendDataToServlet(data, requestHandler) {
-    // let servletUrl = '/server-1.0-SNAPSHOT/ControllerServlet';
-    // $.ajax({
-    //     type: 'POST',
-    //     url: servletUrl,
-    //     data: data,
-    //     success: (response) => requestHandler(response)
-    // });
-}
+// function sendDataToServlet(data, requestHandler) {
+//     let servletUrl = '/server-1.0-SNAPSHOT/ControllerServlet';
+//     $.ajax({
+//         type: 'POST',
+//         url: servletUrl,
+//         data: data,
+//         success: (response) => requestHandler(response)
+//     });
+// }
 
 function addJsonDot(json) {
     addDot(JSON.parse(json));
@@ -365,7 +325,6 @@ function userError(id) {
     }, 5000)
 }
 
-
 function canvasEvent(x, y) {
     let r = getR(formValueR);
 
@@ -385,6 +344,10 @@ function canvasEvent(x, y) {
             sendDataToServlet(data, addJsonDot);
         }
     }
+}
+
+function setDotToFakeForm() {
+
 }
 
 const WIDTH = 350;
@@ -482,11 +445,11 @@ function canvasDrawDots(canvas, dot) {
 
     ctx.beginPath();
     ctx.strokeStyle = COLOR;
-    ctx.arc(x, y, 8, 0, 2 * Math.PI)
+    ctx.arc(x, y, 8, 0, 2 * Math.PI);
     ctx.closePath();
     ctx.stroke();
 }
 
-const canvas = document.querySelector("#graph")
+const canvas = document.querySelector("#graph");
 
 canvasDraw(canvas);

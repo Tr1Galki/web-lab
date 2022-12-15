@@ -1,18 +1,23 @@
 package web.server.bean;
 
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.DeliverCallback;
 import jakarta.annotation.PostConstruct;
-import jakarta.enterprise.event.Observes;
-import jakarta.faces.event.WebsocketEvent;
+import jakarta.ejb.EJB;
 import jakarta.faces.push.Push;
 import jakarta.faces.push.PushContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import web.server.Dot;
 
+import java.io.IOException;
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.concurrent.TimeoutException;
 
 @Named("webSocketBean")
 @ViewScoped
@@ -32,10 +37,11 @@ public class WebSocketBean implements Serializable {
     }
 
     @Inject
-    @Push
-    private PushContext userChannel;
+    @Push(channel="incoming")
+    private PushContext incoming;
 
-    private String message;
+    @EJB
+    private MessageService msgService;
 
     private String x;
     private String y;
@@ -44,27 +50,87 @@ public class WebSocketBean implements Serializable {
     private String owner;
     private String creator;
 
-    public void sendMessage() {
-        userChannel.send("message");
-        System.out.println("temp_dot" + " x= " + x + " y= " + y + " r= " + Arrays.toString(r) + " ropt= " + rOptions + " owner= " + owner + " creator= " + creator);
+    private Dot dot;
+
+
+    private String enteredMessage;
+
+    public List<String> getMessages() {
+        return msgService.getMessages();
+    }
+
+    public void receiveMessage() {;
+        //TODO: реализовать забор данных с xhtml
+    }
+
+    public void doMessage(String message) {
+        System.out.println("send-start");
+        incoming.send("dot" );
+        System.out.println("send-stop");
+        System.out.println("---");
     }
 
 
-    public void onOpen(@Observes @WebsocketEvent.Opened WebsocketEvent opened) {
-        userChannel.send("fffffffffffffffffff");
-    }
-
-    public void onClose(@Observes @WebsocketEvent.Closed WebsocketEvent closed) {
-
+    private void handling(String message) throws IOException {
+        doMessage(message);
     }
 
 
-    public String getMessage() {
-        return message;
+
+    private void rabbitSend(String message) {
+        final String QUEUE_NAME = "fromClientToServerQueue";
+        ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost("localhost");
+        try (Connection connection = factory.newConnection();
+             Channel channel = connection.createChannel()) {
+            channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+            channel.basicPublish("", QUEUE_NAME, null, message.getBytes(StandardCharsets.UTF_8));
+            System.out.println(" [x] User sent '" + message + "'");
+        } catch (IOException | TimeoutException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    private void rabbitReceive() {
+        final String QUEUE_NAME = "fromServerToClientQueue";
+        try {
+            ConnectionFactory factory = new ConnectionFactory();
+            factory.setHost("localhost");
+            Connection connection = factory.newConnection();
+            Channel channel = connection.createChannel();
+
+            channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+            System.out.println(" [*] User waiting for messages. To exit press CTRL+C");
+
+            DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+                String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
+                System.out.println(" [x] User received '" + message + "'");
+                handling(message);
+            };
+            channel.basicConsume(QUEUE_NAME, true, deliverCallback, consumerTag -> {
+            });
+        } catch (IOException | TimeoutException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
+
+    public Dot getDot() {
+        return dot;
+    }
+
+    public void setDot(Dot dot) {
+        this.dot = dot;
+    }
+
+    public String getEnteredMessage() {
+        return enteredMessage;
+    }
+
+    public void setEnteredMessage(String enteredMessage) {
+        this.enteredMessage = enteredMessage;
     }
 
     public String getX() {

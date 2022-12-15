@@ -114,6 +114,21 @@ public class QueueHandler {
                 send(jsonResponse);
                 break;
             }
+            case ("checkAndAdd"): {
+                Object oElem = json.get("dot");
+                JSONObject elem = new JSONObject(oElem);
+                Dot dot = new Dot(elem.getBoolean("inArea"), elem.getDouble("x"), elem.getDouble("y"),
+                        elem.getDouble("r"), new Date(elem.getString("date")), elem.getInt("time"),
+                        ownerID, elem.getString("creator"));
+                DBHandler dbHandler = new DBHandler();
+                dbHandler.addDot(dot);
+                jsonResponse = "{" +
+                        "\"type\":\"newDot\"," +
+                        "\"ownerPhoneNumber\":\"" + ownerPhone + "\"" +
+                        "}";
+                send(jsonResponse);
+                break;
+            }
             default: {
                 break;
             }

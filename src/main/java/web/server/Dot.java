@@ -1,11 +1,14 @@
 package web.server;
 
-import jakarta.persistence.Entity;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.inject.Named;
 
 import java.io.Serializable;
 import java.util.Date;
 
 //@Entity(name = "Dot")
+@Named("dot")
+@SessionScoped
 public class Dot implements Serializable {
     private Boolean inArea;
     private Double x, y, r;
