@@ -1,8 +1,7 @@
 package web.server.data_base;
 
-import web.server.Dot;
+import web.server.bean.Dot;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;

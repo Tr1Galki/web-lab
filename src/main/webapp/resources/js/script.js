@@ -1,5 +1,9 @@
 const userID = sessionStorage.getItem('user_id');
 const userPhone = sessionStorage.getItem('user_phone_number');
+window.onbeforeunload = () => {
+    sessionStorage.setItem('user_id', userID);
+    sessionStorage.setItem('user_phone_number', userPhone);
+}
 
 if (!userID) {
     window.location.replace("../index.xhtml");
@@ -18,55 +22,44 @@ let formValueX,
 
 const listOfDots = [];
 
-function socketHandler(message, channel, event) {
-    console.log(message);
-    //TODO: add handling of input data (old socketHandler func)
-}
-
 function socketOnOpen() {
     console.log("Successful websocket connection");
     document.querySelector(".hidden_on_open_button").click();
 }
 
-// function socketHandler() {
-//     socket.onerror = () => {
-//         console.log("WebSocket my error");
-//     }
-//     socket.onclose = () => {
-//         console.log("WebSocket closed");
-//     }
-//     window.onbeforeunload = () => {
-//         // socket.close();
-//         sessionStorage.setItem('user_id', userID);
-//         sessionStorage.setItem('user_phone_number', userPhone);
-//     }
-//     socket.onmessage = function (e) {
-//         try {
-//             let jsonResponse = JSON.parse(e.data);
-//             switch (jsonResponse.type) {
-//                 case ("allDots"): {
-//                     listDotsHandler(jsonResponse.array);
-//                     break;
-//                 }
-//                 case ("sentDots"): {
-//                     if (jsonResponse.result === "userNotExist") {
-//                         userError("user_not_exist");
-//                     }
-//                     break;
-//                 }
-//                 case ("receivedDots"): {
-//                     listDotsHandler(jsonResponse.array);
-//                     break;
-//                 }
-//                 default: {
-//                     console.log("no one type with: " + jsonResponse.type);
-//                 }
-//             }
-//         } catch (exception) {
-//             console.log("Error. " + exception)
-//         }
-//     }
-// }
+function socketListener(message, channel, event) {
+    message = JSON.parse(message)
+    if (message.ownerPhoneNumber == userPhone){
+        socketHandler(message)
+    }
+}
+
+function socketHandler(response) {
+    switch (response.type) {
+        case ("allDots"): {
+            listDotsHandler(response.array);
+            break;
+        }
+        case ("sentDots"): {
+            if (response.result === "userNotExist") {
+                userError("user_not_exist");
+            }
+            break;
+        }
+        case ("receivedDots"): {
+            listDotsHandler(response.array);
+            break;
+        }
+        case ("newDot"): {
+            addDot(response.dot);
+            break;
+        }
+        default: {
+            console.log("no one type with: " + response.type);
+        }
+    }
+}
+
 
 let sendDotsButton = document.querySelector("#send_dots_button");
 sendDotsButton.addEventListener("click", (e) => {
@@ -85,15 +78,8 @@ function getChosenDots() {
         for (let dotIndex = 0; dotIndex < checkedDots.length; dotIndex++) {
             currentDots.push(listOfDots[checkedDots[dotIndex].value]);
         }
-        // let data = {
-        //     type: "sendDots",
-        //     ownerID: userID,
-        //     ownerPhoneNumber: userPhone,
-        //     array: currentDots,
-        //     targetPhoneNumber: inputNumberElem.value
-        // }
 
-        document.querySelector(".dots_to_other_array").value = currentDots;
+        document.querySelector(".dots_to_other_array").value = JSON.stringify(currentDots);
         document.querySelector(".send_dots_to_other").click();
     } else {
         userError("no_dot_selected");
@@ -179,27 +165,6 @@ for (let i = 0; i < inputFormR.length; i++) {
     })
 }
 
-// function submitEvent(e) {
-// e.preventDefault()
-// let newValueX = getX(formValueX);
-// let newValueY = getY(formValueY);
-// let newValueR = getR(formValueR);
-//
-// if (newValueX && (newValueY || newValueY === 0) && newValueR) {
-//     for (let i = 0; i < newValueR.length; i++) {
-//         let data = {
-//             requestType: 'areaReq',
-//             x: newValueX,
-//             y: newValueY,
-//             r: newValueR[i],
-//             startTime: new Date().getTime(),
-//             owner: userPhone,
-//             creator: userPhone
-//         }
-//         sendDataToServlet(data, addJsonDot);
-//     }
-// }
-// }
 
 function getR(currR) {
     if (!currR) {
@@ -328,7 +293,8 @@ const WIDTH = 350;
 const HEIGHT = 350;
 const DPI_WIDTH = WIDTH * 2;
 const DPI_HEIGHT = HEIGHT * 2;
-const COLOR = "#FFFFFF"
+const COLOR_WHITE = "#FFFFFF"
+const COLOR_GREY = "#AFAFAF"
 const RADIUS = 300;
 const PADDING = 12;
 
@@ -346,13 +312,13 @@ function canvasDraw(canvas) {
         canvasEvent(x, y);
     }
 
-    canvas.addEventListener('mousedown',(e) => {
+    canvas.addEventListener('mousedown', (e) => {
         getCursorPosition(canvas, e);
     });
 
     // Y axis
     ctx.beginPath();
-    ctx.strokeStyle = COLOR;
+    ctx.strokeStyle = COLOR_WHITE;
     ctx.lineWidth = 4;
     ctx.lineTo(DPI_WIDTH / 2, 0);
     ctx.lineTo(DPI_WIDTH / 2, DPI_HEIGHT);
@@ -361,7 +327,7 @@ function canvasDraw(canvas) {
 
     //X axis
     ctx.beginPath();
-    ctx.strokeStyle = COLOR;
+    ctx.strokeStyle = COLOR_WHITE;
     ctx.lineWidth = 4;
     ctx.lineTo(0, DPI_HEIGHT / 2);
     ctx.lineTo(DPI_WIDTH, DPI_HEIGHT / 2);
@@ -370,9 +336,9 @@ function canvasDraw(canvas) {
 
     //Radius
     ctx.beginPath();
-    ctx.strokeStyle = COLOR;
+    ctx.strokeStyle = COLOR_WHITE;
     ctx.font = "normal 40px Montserrat Light";
-    ctx.fillStyle = COLOR;
+    ctx.fillStyle = COLOR_WHITE;
     ctx.fillText("R", DPI_WIDTH / 2 + RADIUS + PADDING, DPI_HEIGHT / 2 - PADDING);
     ctx.fillText("R/2", DPI_WIDTH / 2 + RADIUS / 2 - 2 * PADDING, DPI_HEIGHT / 2 - PADDING);
     ctx.fillText("R/2", DPI_WIDTH / 2 - RADIUS / 2 - 2 * PADDING, DPI_HEIGHT / 2 - PADDING);
@@ -382,7 +348,7 @@ function canvasDraw(canvas) {
 
     //square
     ctx.beginPath();
-    ctx.strokeStyle = COLOR;
+    ctx.strokeStyle = COLOR_WHITE;
     ctx.lineWidth = 4;
     ctx.lineTo(DPI_WIDTH / 2, DPI_HEIGHT - (DPI_HEIGHT / 2 + RADIUS));
     ctx.lineTo(DPI_WIDTH / 2 + RADIUS, DPI_HEIGHT - (DPI_HEIGHT / 2 + RADIUS));
@@ -392,7 +358,7 @@ function canvasDraw(canvas) {
 
     //circle
     ctx.beginPath();
-    ctx.strokeStyle = COLOR;
+    ctx.strokeStyle = COLOR_WHITE;
     ctx.lineWidth = 4;
     for (let i = DPI_HEIGHT / 2; i <= DPI_WIDTH / 2 + RADIUS / 2; i++) {
         ctx.lineTo(i, Math.round(Math.sqrt(RADIUS * RADIUS / 4 - (i - DPI_WIDTH / 2) * (i - DPI_WIDTH / 2)) + DPI_HEIGHT / 2));
@@ -402,7 +368,7 @@ function canvasDraw(canvas) {
 
     //triangle
     ctx.beginPath();
-    ctx.strokeStyle = COLOR;
+    ctx.strokeStyle = COLOR_WHITE;
     ctx.lineWidth = 4;
     ctx.lineTo(DPI_WIDTH / 2, DPI_HEIGHT - (DPI_HEIGHT / 2 - RADIUS));
     ctx.lineTo(DPI_WIDTH / 2 - RADIUS / 2, DPI_HEIGHT - (DPI_HEIGHT / 2));
@@ -418,7 +384,11 @@ function canvasDrawDots(canvas, dot) {
     let y = -(dot.y / dot.r - WIDTH / RADIUS) * RADIUS;
 
     ctx.beginPath();
-    ctx.strokeStyle = COLOR;
+    if (dot.inArea) {
+        ctx.strokeStyle = COLOR_WHITE;
+    } else {
+        ctx.strokeStyle = COLOR_GREY;
+    }
     ctx.arc(x, y, 8, 0, 2 * Math.PI);
     ctx.closePath();
     ctx.stroke();

@@ -7,13 +7,18 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import web.server.bean.Dot;
 import web.server.data_base.DBHandler;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.TimeoutException;
 
 public class QueueHandler {
@@ -53,7 +58,6 @@ public class QueueHandler {
         Gson gson = new Gson();
         JSONObject json = new JSONObject(jsonMessage);
         String type = json.get("type").toString();
-
         String ownerPhone = json.get("ownerPhoneNumber").toString();
         String ownerID = json.get("ownerID").toString();
         String jsonResponse;
@@ -95,9 +99,25 @@ public class QueueHandler {
                     LinkedList<Dot> linkedList = new LinkedList<>();
                     for (int i = 0; i < array.length(); i++) {
                         JSONObject elem = new JSONObject(array.get(i).toString());
-                        Dot dot = new Dot(elem.getBoolean("inArea"), elem.getDouble("x"), elem.getDouble("y"),
-                                elem.getDouble("r"), new Date(elem.getString("date")), elem.getInt("time"),
-                                targetPhoneNumber, elem.getString("creator"));
+                        Dot dot = null;
+                        try {
+                            DateFormat format = new SimpleDateFormat("EEE MMM dd HH:mm:ss ZZZ yyyy", Locale.ENGLISH);
+                            Date newDate = format.parse(elem.getString("date"));
+                            dot = new Dot(elem.getBoolean("inArea"), elem.getDouble("x"), elem.getDouble("y"),
+                                    elem.getDouble("r"), newDate, elem.getInt("time"),
+                                    targetPhoneNumber, elem.getString("creator"));
+                        } catch (ParseException e) {
+                            DateFormat format = new SimpleDateFormat("MMM dd, yyyy, HH:mm:ss a", Locale.ENGLISH);
+                            Date newDate = null;
+                            try {
+                                newDate = format.parse(elem.getString("date"));
+                            } catch (ParseException ex) {
+                                ex.printStackTrace();
+                            }
+                            dot = new Dot(elem.getBoolean("inArea"), elem.getDouble("x"), elem.getDouble("y"),
+                                    elem.getDouble("r"), newDate, elem.getInt("time"),
+                                    targetPhoneNumber, elem.getString("creator"));
+                        }
                         linkedList.add(dot);
                     }
 
@@ -115,16 +135,18 @@ public class QueueHandler {
                 break;
             }
             case ("checkAndAdd"): {
-                Object oElem = json.get("dot");
-                JSONObject elem = new JSONObject(oElem);
-                Dot dot = new Dot(elem.getBoolean("inArea"), elem.getDouble("x"), elem.getDouble("y"),
-                        elem.getDouble("r"), new Date(elem.getString("date")), elem.getInt("time"),
-                        ownerID, elem.getString("creator"));
+                Dot dot = new Dot(Boolean.parseBoolean(json.getJSONObject("dot").getString("inArea")),
+                        Double.parseDouble(json.getJSONObject("dot").getString("x")),
+                        Double.parseDouble(json.getJSONObject("dot").getString("y")),
+                        Double.parseDouble(json.getJSONObject("dot").getString("r")), new Date(),
+                        (int) System.currentTimeMillis() - Integer.parseInt(json.getJSONObject("dot").getString("time")),
+                        ownerPhone, json.getJSONObject("dot").getString("creator"));
                 DBHandler dbHandler = new DBHandler();
                 dbHandler.addDot(dot);
                 jsonResponse = "{" +
                         "\"type\":\"newDot\"," +
-                        "\"ownerPhoneNumber\":\"" + ownerPhone + "\"" +
+                        "\"ownerPhoneNumber\":\"" + ownerPhone + "\"," +
+                        "\"dot\":" + dot.getJson() + "" +
                         "}";
                 send(jsonResponse);
                 break;
@@ -136,13 +158,14 @@ public class QueueHandler {
     }
 
     private static void send(String message) {
-        final String QUEUE_NAME = "fromServerToClientQueue";
+        final String EXCHANGE_NAME = "fromServerToClientQueue";
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("localhost");
         try (Connection connection = factory.newConnection();
              Channel channel = connection.createChannel()) {
-            channel.queueDeclare(QUEUE_NAME, false, false, false, null);
-            channel.basicPublish("", QUEUE_NAME, null, message.getBytes(StandardCharsets.UTF_8));
+            channel.exchangeDeclare(EXCHANGE_NAME, "fanout");
+            channel.basicPublish(EXCHANGE_NAME, "", null, message.getBytes(StandardCharsets.UTF_8));
+
             System.out.println(" [x] Server sent '" + message + "'");
         } catch (IOException | TimeoutException e) {
             e.printStackTrace();

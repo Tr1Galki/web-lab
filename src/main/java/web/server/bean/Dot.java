@@ -1,4 +1,4 @@
-package web.server;
+package web.server.bean;
 
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.inject.Named;
@@ -29,6 +29,19 @@ public class Dot implements Serializable {
         this.time = time;
         this.owner = owner;
         this.creator = creator;
+    }
+
+    public String getJson() {
+        return "{" +
+                "\"inArea\":\"" + inArea + "\"," +
+                "\"x\":\"" + x + "\"," +
+                "\"y\":\"" + y + "\"," +
+                "\"r\":\"" + r + "\"," +
+                "\"date\":\"" + date + "\"," +
+                "\"time\":\"" + time + "\"," +
+                "\"owner\":\"" + owner + "\"," +
+                "\"creator\":\"" + creator + "\"" +
+                "}";
     }
 
     public Boolean getInArea() {

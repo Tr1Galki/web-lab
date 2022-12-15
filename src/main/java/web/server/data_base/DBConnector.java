@@ -1,6 +1,6 @@
 package web.server.data_base;
 
-import web.server.Dot;
+import web.server.bean.Dot;
 
 import java.sql.*;
 import java.text.DateFormat;

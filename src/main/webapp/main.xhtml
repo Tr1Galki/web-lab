@@ -40,7 +40,7 @@
                     <legend>Share dots to number</legend>
                     <div>
                         <h:inputText styleClass="target_input" maxlength="12" autocomplete="off"
-                                     value="#{webSocketBean.y}">
+                                     value="#{webSocketBean.target}">
                         </h:inputText>
                     </div>
                     <div class="new_error" id="no_dot_selected">
@@ -120,7 +120,6 @@
                         <h:inputText id="user-id" value="#{webSocketBean.hiddenUserID}" styleClass="hidden-user-id"/>
                     </div>
                     <div class="button--sender">
-                        <!-- TODO: change this button and main form -->
                         <h:commandButton value="Submit" id="submit_button" action="#{webSocketBean.mainSubmitButton}">
                             <f:ajax execute="@form"/>
                         </h:commandButton>
@@ -182,6 +181,7 @@
     </h:form>
 
 
+
     <!-- main scripts -->
     <script type="module" src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
     <h:outputScript name="js/script.js"/>
@@ -194,9 +194,9 @@
 
 
     <!-- websockets -->
-    <f:websocket channel="incoming"
+    <f:websocket channel="channel"
                  onopen="socketOnOpen"
-                 onmessage="socketHandler"/>
+                 onmessage="socketListener"/>
 
 </f:view>
 

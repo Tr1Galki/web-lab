@@ -5,14 +5,15 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.push.Push;
 import jakarta.faces.push.PushContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import org.json.JSONObject;
-import web.server.Dot;
 import web.server.QueueHandler;
+import web.server.util.AreaChecker;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -40,9 +41,10 @@ public class WebSocketBean implements Serializable {
     }
 
     @Inject
-    @Push(channel="incoming")
-    private PushContext incoming;
+    @Push(channel = "channel")
+    private PushContext channel;
 
+    private Boolean inArea;
     private String x;
     private String canvasX;
     private String y;
@@ -61,42 +63,86 @@ public class WebSocketBean implements Serializable {
 
     private Dot dot;
 
-    public void mainSubmitButton() {
-        //TODO: add realisation of main button (check too);
-    }
-
-    public void hiddenSubmitButton() {
-        //TODO: add realisation of hidden button
-    }
+    private final AreaChecker areaChecker = new AreaChecker();
 
     public void onOpen() {
-        //todo: add realisation of onOpen event
+        String jsonRequest;
 
-        //     let getDots = {
-        //         type: "getAllDots",
-        //         ownerID: userID,
-        //         ownerPhoneNumber: userPhone
-        //     }
-        //     socketSend(JSON.stringify(getDots));
-    }
+        jsonRequest = "{" +
+                "\"type\":\"getAllDots\"," +
+                "\"ownerID\":\"" + hiddenUserID + "\"," +
+                "\"ownerPhoneNumber\":\"" + hiddenPhoneNumber + "\"" +
+                "}";
 
-    public void sendDotsToOther() {
-        //TODO: стандартно добавить реализацию
-    }
-
-    public void receiveMessage() {
-        //TODO: реализовать забор данных с xhtml
+        handlingBeforeSendToServer(jsonRequest);
     }
 
     public void doMessage(String message) {
-        //TODO: реалтзовать отправку на js
+        channel.send(message);
+    }
+
+    public void mainSubmitButton() {
+        for (String currR : r) {
+            Dot dot = new Dot(isInArea(), Double.parseDouble(x), Double.parseDouble(y), Double.parseDouble(currR),
+                    new Date(), (int) System.currentTimeMillis(), hiddenPhoneNumber, hiddenPhoneNumber);
+            dot = areaChecker.checkArea(dot);
+            String jsonDot = dot.getJson();
+
+            String jsonRequest;
+            jsonRequest = "{" +
+                    "\"type\":\"checkAndAdd\"," +
+                    "\"ownerID\":\"" + hiddenUserID + "\"," +
+                    "\"dot\":" + jsonDot + "," +
+                    "\"ownerPhoneNumber\":\"" + hiddenPhoneNumber + "\"" +
+                    "}";
+            handlingBeforeSendToServer(jsonRequest);
+        }
+    }
+
+    public void hiddenSubmitButton() {
+        Dot dot = new Dot(isInArea(), Double.parseDouble(canvasX), Double.parseDouble(canvasY),
+                Double.parseDouble(canvasR), new Date(), (int) System.currentTimeMillis(), hiddenPhoneNumber, hiddenPhoneNumber);
+        dot = areaChecker.checkArea(dot);
+        String jsonDot = dot.getJson();
+
+        String jsonRequest;
+        jsonRequest = "{" +
+                "\"type\":\"checkAndAdd\"," +
+                "\"ownerID\":\"" + hiddenUserID + "\"," +
+                "\"dot\":" + jsonDot + "," +
+                "\"ownerPhoneNumber\":\"" + hiddenPhoneNumber + "\"" +
+                "}";
+        handlingBeforeSendToServer(jsonRequest);
+    }
+
+    public void sendDotsToOther() {
+        String jsonRequest;
+
+        jsonRequest = "{" +
+                "\"type\":\"sendDots\"," +
+                "\"ownerID\":\"" + hiddenUserID + "\"," +
+                "\"ownerPhoneNumber\":\"" + hiddenPhoneNumber + "\"," +
+                "\"array\":" + dotsToOtherArray + "," +
+                "\"targetPhoneNumber\":\"" + target + "\"" +
+                "}";
+
+        handlingBeforeSendToServer(jsonRequest);
     }
 
 
-    private void handling(String message) throws IOException {
-        doMessage(message);
+    private void handlingBeforeSendToServer(String message) {
+
+        rabbitSend(message);
+
     }
 
+    private void handlingAfterReceiveFromServer(String message) {
+        JSONObject json = new JSONObject(message);
+        String ownerPhone = json.get("ownerPhoneNumber").toString();
+        if (ownerPhone.equals(hiddenPhoneNumber)) {
+            doMessage(message);
+        }
+    }
 
 
     private void rabbitSend(String message) {
@@ -107,30 +153,32 @@ public class WebSocketBean implements Serializable {
              Channel channel = connection.createChannel()) {
             channel.queueDeclare(QUEUE_NAME, false, false, false, null);
             channel.basicPublish("", QUEUE_NAME, null, message.getBytes(StandardCharsets.UTF_8));
-            System.out.println(" [x] User sent '" + message + "'");
+            System.out.println(" [x] User " + hiddenPhoneNumber + " sent '" + message + "'");
         } catch (IOException | TimeoutException e) {
             e.printStackTrace();
         }
     }
 
     private void rabbitReceive() {
-        final String QUEUE_NAME = "fromServerToClientQueue";
+        final String EXCHANGE_NAME = "fromServerToClientQueue";
         try {
             ConnectionFactory factory = new ConnectionFactory();
             factory.setHost("localhost");
             Connection connection = factory.newConnection();
             Channel channel = connection.createChannel();
 
-            channel.queueDeclare(QUEUE_NAME, false, false, false, null);
-            System.out.println(" [*] User waiting for messages. To exit press CTRL+C");
+            channel.exchangeDeclare(EXCHANGE_NAME, "fanout");
+            String queueName = channel.queueDeclare().getQueue();
+            channel.queueBind(queueName, EXCHANGE_NAME, "");
+
+            System.out.println(" [*] User waiting for messages");
 
             DeliverCallback deliverCallback = (consumerTag, delivery) -> {
                 String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
-                System.out.println(" [x] User received '" + message + "'");
-                handling(message);
+                System.out.println(" [x] User " + hiddenPhoneNumber + " received '" + message + "'");
+                handlingAfterReceiveFromServer(message);
             };
-            channel.basicConsume(QUEUE_NAME, true, deliverCallback, consumerTag -> {
-            });
+            channel.basicConsume(queueName, true, deliverCallback, consumerTag -> { });
         } catch (IOException | TimeoutException e) {
             e.printStackTrace();
         }
@@ -150,6 +198,14 @@ public class WebSocketBean implements Serializable {
 
     public void setDot(Dot dot) {
         this.dot = dot;
+    }
+
+    public Boolean isInArea() {
+        return inArea;
+    }
+
+    public void setInArea(Boolean inArea) {
+        this.inArea = inArea;
     }
 
     public String getX() {
