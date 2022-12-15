@@ -121,11 +121,11 @@ th.choose_col {
 }
 
 .hidden{
-    visibility: hidden;
+    display: none;
 }
 
 .hidden *{
-    visibility: hidden;
+    display: none;
 }
 
 /* ---- particles.js container ---- */

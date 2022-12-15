@@ -10,7 +10,9 @@ import jakarta.faces.push.PushContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import org.json.JSONObject;
 import web.server.Dot;
+import web.server.QueueHandler;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -27,6 +29,8 @@ public class WebSocketBean implements Serializable {
 
     @PostConstruct
     public void init() {
+        QueueHandler.run();
+        rabbitReceive();
         rOptions = new LinkedHashMap<>();
         rOptions.put("1", "1");
         rOptions.put("1.5", "1.5");
@@ -53,11 +57,12 @@ public class WebSocketBean implements Serializable {
     private String owner;
     private String creator;
     private String target;
+    private String dotsToOtherArray;
 
     private Dot dot;
 
     public void mainSubmitButton() {
-        //TODO: add realisation of main button
+        //TODO: add realisation of main button (check too);
     }
 
     public void hiddenSubmitButton() {
@@ -132,6 +137,11 @@ public class WebSocketBean implements Serializable {
     }
 
 
+    private String getOwnerPhone(String message) {
+        System.out.println(message);
+        JSONObject json = new JSONObject(message);
+        return json.get("ownerPhoneNumber").toString();
+    }
 
 
     public Dot getDot() {
@@ -252,5 +262,13 @@ public class WebSocketBean implements Serializable {
 
     public void setTarget(String target) {
         this.target = target;
+    }
+
+    public String getDotsToOtherArray() {
+        return dotsToOtherArray;
+    }
+
+    public void setDotsToOtherArray(String dotsToOtherArray) {
+        this.dotsToOtherArray = dotsToOtherArray;
     }
 }

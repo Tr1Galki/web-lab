@@ -69,7 +69,8 @@ function socketOnOpen() {
 // }
 
 let sendDotsButton = document.querySelector("#send_dots_button");
-sendDotsButton.addEventListener("click", () => {
+sendDotsButton.addEventListener("click", (e) => {
+    e.preventDefault();
     getChosenDots();
 })
 
@@ -84,19 +85,18 @@ function getChosenDots() {
         for (let dotIndex = 0; dotIndex < checkedDots.length; dotIndex++) {
             currentDots.push(listOfDots[checkedDots[dotIndex].value]);
         }
-        let data = {
-            type: "sendDots",
-            ownerID: userID,
-            ownerPhoneNumber: userPhone,
-            array: currentDots,
-            targetPhoneNumber: inputNumberElem.value
-        }
+        // let data = {
+        //     type: "sendDots",
+        //     ownerID: userID,
+        //     ownerPhoneNumber: userPhone,
+        //     array: currentDots,
+        //     targetPhoneNumber: inputNumberElem.value
+        // }
 
-
-        socketSend(JSON.stringify(data));
+        document.querySelector(".dots_to_other_array").value = currentDots;
+        document.querySelector(".send_dots_to_other").click();
     } else {
         userError("no_dot_selected");
-        return null;
     }
 }
 
@@ -346,8 +346,8 @@ function canvasDraw(canvas) {
         canvasEvent(x, y);
     }
 
-    canvas.addEventListener('mousedown', function (e) {
-        getCursorPosition(canvas, e)
+    canvas.addEventListener('mousedown',(e) => {
+        getCursorPosition(canvas, e);
     });
 
     // Y axis

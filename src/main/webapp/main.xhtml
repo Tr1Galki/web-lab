@@ -39,7 +39,8 @@
                 <fieldset class="form__group">
                     <legend>Share dots to number</legend>
                     <div>
-                        <h:inputText styleClass="target_input" maxlength="12" autocomplete="off" value="#{webSocketBean.y}">
+                        <h:inputText styleClass="target_input" maxlength="12" autocomplete="off"
+                                     value="#{webSocketBean.y}">
                         </h:inputText>
                     </div>
                     <div class="new_error" id="no_dot_selected">
@@ -50,6 +51,13 @@
                     </div>
                     <div>
                         <button id="send_dots_button">SEND</button>
+                        <div class="hidden">
+                            <h:inputText id="dots_to_other_array" value="#{webSocketBean.dotsToOtherArray}" styleClass="dots_to_other_array"/>
+                            <h:commandButton value="" id="send_dots_to_other"
+                                             action="#{webSocketBean.sendDotsToOther}" styleClass="send_dots_to_other">
+                                <f:ajax execute="@form"/>
+                            </h:commandButton>
+                        </div>
                     </div>
                 </fieldset>
             </h:form>
@@ -112,8 +120,9 @@
                         <h:inputText id="user-id" value="#{webSocketBean.hiddenUserID}" styleClass="hidden-user-id"/>
                     </div>
                     <div class="button--sender">
+                        <!-- TODO: change this button and main form -->
                         <h:commandButton value="Submit" id="submit_button" action="#{webSocketBean.mainSubmitButton}">
-                            <f:ajax/>
+                            <f:ajax execute="@form"/>
                         </h:commandButton>
                     </div>
                 </fieldset>
